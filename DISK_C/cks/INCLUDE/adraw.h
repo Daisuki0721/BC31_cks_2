@@ -43,6 +43,10 @@ void record_select_draw(int x, int y, int num);
 void highlight_switch_user(int unum, int sidepage);
 /*高亮按钮切换函数（地点）*/
 void highlight_switch_area(int i, int sidepage);
+/*高亮按钮切换函数(记录)*/
+void highlight_switch_record(USER user, int rnum, int sidepage);
+/*高亮按钮切换函数（邮件）*/
+void highlight_switch_record(USER user, int rnum, int sidepage);
 /*在指定位置输出一个星期几(使用puthz函数)*/
 /*flag为星期几代号，size为字号大小（可选16，24，32，48）*/
 void put_week(int x, int y, int flag, int size, int color);
@@ -52,4 +56,7 @@ void week_button(int x, int y, int flag, int size);
 void week_keyboard(int x, int y);
 /*系统时间显示*/
 void sys_time(int x, int y);
+/*多行文字输出（32号字，行距为2，最大输入行数为18行）*/
+void puthz_lines(int x, int y, char * str1, char * str2, char * str3, char * str4, char * str5, char * str6, char * str7, char * str8,
+	 char * str9, char * str10, char * str11, char * str12, char * str13, char * str14, char * str15, char * str16, char * str17, char * str18);
 #endif

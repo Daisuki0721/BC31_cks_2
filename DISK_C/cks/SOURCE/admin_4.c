@@ -72,9 +72,10 @@ void g_admin_rule_panel(int sidepage)
 void areainfo_display_ctrl(int * i, int * sidepage, int * page)
 {
     int j, k;
+    int time = -1, time1 = -1, time2 = -1, time3 = -1;
     int flag = 0, esc = 0, week_num = -1, ifstart = 1;
-    AREA temp = {0};
     AREA AP[14];
+    AREA temp = {0};
     char str[30], str_time[3];
     char * week[7] = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"};
     area_read(AP);          //读取地点信息
@@ -102,9 +103,8 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
     bar1(200, 410, 1005, 755, 33808);   //绘制用户控件面板
     bar1(205, 415, 1000, 750, 65530); 
     puthz(215, 420, "管理地点信息面板", 32, 33, 0);   //管理用户信息面板
-    puthz(215, 465, "地点名称修改：", 32, 33, 0);   //地点名称修改
+    puthz(215, 465, "违停时间修改：", 32, 33, 0);   //地点名称修改
     puthz(215, 505, "是否为全路段禁停：", 32, 33, 0);   //是否为全路段禁停
-    puthz(215, 545, "违停时间段修改：", 32, 33, 0);   //违停时间段
     bar2(215+32*7, 465, 215+32*7+96, 465+32, 0);   //违停时间段修改星期选择框
     bar2(547, 465, 547+24*4+8, 465+32, 0);  //起始/终止切换框（默认起始）
     puthz(547+4, 465+4, "起始时间", 24, 25, 0);   //起始时间
@@ -119,10 +119,11 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
        red_tick(215+32*9, 511);   //是否为全路段禁停
     }
 
+    puthz(220, 545, "每更新一次时间信息，请点击一次修改时间按钮！", 24, 25, 63488);   //更新时间信息按钮
 
     rounded_button_d(220, 700, 140, 40, "返回主页", 5, 65498);   //返回主页按钮
-
-    rounded_button_d(700, 700, 140, 40, "确认修改", 5, 65498);   //确认修改按钮
+    rounded_button_d(550, 700, 140, 40, "禁停切换", 5, 65498);   //禁停切换按钮
+    rounded_button_d(700, 700, 140, 40, "修改时间", 5, 65498);   //确认修改按钮
     rounded_button_d(850, 700, 140, 40, "初始化地点", 5, 65498);   //初始化地点按钮
 
     mouse_on(mouse);
@@ -161,7 +162,111 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
                 continue;
             }
 
-            if(mouse_in(547, 465, 547+24*4+8, 465+32))
+            if(mouse_in(667, 465, 667+40, 465+32))  //获取小时
+            {
+                mouse_trans(HAND);
+                if(mouse_press(667, 465, 667+40, 465+32))
+                {
+                    mouse_off(&mouse);
+                    bar1(667+1, 465+1, 667+40-1, 465+32-1, 65530);   //清除输入框
+                    strcpy(str_time, "\0\0\0");
+                    Getinfo(667+3, 465+3, str_time, 2, 667+1, 465+1, 667+40-1, 465+32-1);   //获取输入时间
+                    time1 = atoi(str_time);   //转换为整数
+                    if(time1 < 0 || time1 > 24)
+                    {
+                        puthz(220, 660, "输入小时数不合法！", 32, 33, 63488);
+                        delay(2000);
+                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                        bar1(667+1, 465+1, 667+40-1, 465+32-1, 65530);          //清除时间输入框
+                        time1 = -1;
+                    }
+                    mouse_on(mouse);
+                    break;
+                }
+                continue;
+            }
+            else if(mouse_in(727, 465, 727+40, 465+32))      //获取分钟
+            {
+                mouse_trans(HAND);
+                if(mouse_press(727, 465, 727+40, 465+32))
+                {
+                    mouse_off(&mouse);
+                    bar1(727+1, 465+1, 727+40-1, 465+32-1, 65530);   //清除输入框
+                    strcpy(str_time, "\0\0\0");
+                    Getinfo(727+3, 465+3, str_time, 2, 727+1, 465+1, 727+40-1, 465+32-1);   //获取输入时间
+                    time2 = atoi(str_time);   //转换为整数
+                    if(time2 < 0 || time2 > 59)
+                    {
+                        puthz(220, 660, "输入分钟数不合法！", 32, 33, 63488);
+                        delay(2000);
+                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                        bar1(727+1, 465+1, 727+40-1, 465+32-1, 65530);          //清除时间输入框
+                        time2 = -1;
+                    }
+                    mouse_on(mouse);
+                    break;
+                }
+                continue;
+            }
+            else if(mouse_in(787, 465, 787+40, 465+32))     //获取秒钟
+            {
+                mouse_trans(HAND);
+                if(mouse_press(787, 465, 787+40, 465+32))
+                {
+                    mouse_off(&mouse);
+                    bar1(787+1, 465+1, 787+40-1, 465+32-1, 65530);   //清除输入框
+                    strcpy(str_time, "\0\0\0");
+                    Getinfo(787+3, 465+3, str_time, 2, 787+1, 465+1, 787+40-1, 465+32-1);   //获取输入时间
+                    time3 = atoi(str_time);   //转换为整数
+                    if(time3 < 0 || time3 > 59)
+                    {
+                        puthz(220, 660, "输入秒数不合法！", 32, 33, 63488);
+                        delay(2000);
+                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                        bar1(787+1, 465+1, 787+40-1, 465+32-1, 65530);          //清除时间输入框
+                        time3 = -1;
+                    }                        
+                    mouse_on(mouse);
+                    break;
+                }
+            }
+
+            if(mouse_in(550, 700, 550+140, 700+40))     //禁停切换
+            {
+                mouse_trans(HAND);
+                if(mouse_press(550, 700, 550+140, 700+40))
+                {
+                    mouse_off(&mouse);
+                    if(AP[*i].allnp)
+                    {
+                        AP[*i].allnp = 0;
+                        mouse_off(&mouse);
+                        bar1(215+32*9-3, 511-3, 215+32*9+20+3, 511+20+3, 65530);   //清除勾选框
+                        bar2(215+32*9, 511, 215+32*9+20, 511+20, 0);   //是否为全路段禁停勾选框
+                        red_tick(215+32*9, 511);   //全路段禁停
+                        area_save(AP);   //更新地点信息
+                        delay(300);
+                        mouse_on(mouse);
+                        esc = 1;
+                        break;
+                    }
+                    else
+                    {
+                        AP[*i].allnp = 1;
+                        mouse_off(&mouse);
+                        bar1(215+32*9-3, 511-3, 215+32*9+20+3, 511+20+3, 65530);   //清除勾选框
+                        bar2(215+32*9, 511, 215+32*9+20, 511+20, 0);   //是否为全路段禁停勾选框
+                        area_save(AP);   //更新地点信息
+                        delay(300);
+                        mouse_on(mouse);
+                        esc = 1;
+                        break;
+                    }
+                }
+                continue;
+            }
+
+            if(mouse_in(547, 465, 547+24*4+8, 465+32))      //起始/终止切换框（默认起始）
             {
                 mouse_trans(HAND);
                 if(mouse_press(547, 465, 547+24*4+8, 465+32))
@@ -169,31 +274,35 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
                     if(ifstart)
                     {
                         ifstart = 0;
-                        bar1(547, 465, 547+24*4+8, 465+32, 65530);   //起始/终止切换框（默认终止）
+                        mouse_off(&mouse);
+                        bar1(547+1, 465+1, 547+24*4+8-1, 465+32-1, 65530);   //起始/终止切换框（默认终止）
                         puthz(547+4, 465+4, "终止时间", 24, 25, 0);   //起始时间
+                        delay(300);
+                        mouse_on(mouse);
                     }
                     else
                     {
                         ifstart = 1;
-                        bar1(547, 465, 547+24*4+8, 465+32, 65530);   //起始/终止切换框（默认起始）
+                        mouse_off(&mouse);
+                        bar1(547+1, 465+1, 547+24*4+8-1, 465+32-1, 65530);   //起始/终止切换框（默认起始）
                         puthz(547+4, 465+4, "起始时间", 24, 25, 0);   //起始时间
+                        delay(300);
+                        mouse_on(mouse);
                     }
                     break;
                 }
                 continue;
             }
 
-            if(mouse_in(215+32*7, 465, 215+32*7+100, 465+32))
+            if(mouse_in(215+32*7, 465, 215+32*7+100, 465+32))       //选择星期
             {
                 mouse_trans(HAND);
                 if(mouse_press(215+32*7, 465, 215+32*7+100, 465+32))
                 {
                     week_num = week_list(215+32*7, 465+34, 215+32*7, 465);
-
                 }
                 continue;
             }
-
 
             if(mouse_in(220, 700, 220+140, 700+40))     //返回主页
             {
@@ -208,105 +317,202 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
                 continue;
             }
   
-            if(mouse_in(700, 700, 700+140, 700+40))     //确认修改
+            if(mouse_in(700, 700, 700+140, 700+40))     //确认修改时间
             {
                 mouse_trans(HAND);
                 if(mouse_press(700, 700, 700+140, 700+40))
                 {
-                    puthz(220, 660, "是否保存修改信息？", 32, 33, 0);
-                    rounded_button_d(220+32*9, 660, 80, 32, "确定", 5, 65498);   //确定按钮
-                    rounded_button_d(220+32*9+90, 660, 80, 32, "取消", 5, 65498);   //取消按钮 
-                    while(1)
+                    if(!AP[*i].allnp)        //如果不为非禁停模式
                     {
-                        sys_time(200, 20);
-                        mouse_show(&mouse);
-                        if(mouse_in(220+32*9, 660, 220+32*9+80, 660+32))
+                        mouse_off(&mouse);
+                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                        puthz(220, 660, "请切换到非禁停模式以启用时间更改！", 32, 33, 63488);
+                        delay(2000);
+                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                        mouse_on(mouse);
+                        break;
+                    }
+                    else
+                    {
+                        puthz(220, 660, "是否保存修改时间信息？", 32, 33, 0);
+                        rounded_button_d(220+32*12, 660, 80, 32, "确定", 5, 65498);   //确定按钮
+                        rounded_button_d(220+32*12+90, 660, 80, 32, "取消", 5, 65498);   //取消按钮 
+                        while(1)
                         {
-                            mouse_trans(HAND);
-                            if(mouse_press(220+32*9, 660, 220+32*9+80, 660+32))
+                            sys_time(200, 20);
+                            mouse_show(&mouse);
+                            if(mouse_in(220+32*12, 660, 220+32*12+80, 660+32))
                             {
-                                for(j=0; j<7; j++)
+                                mouse_trans(HAND);
+                                if(mouse_press(220+32*12, 660, 220+32*12+80, 660+32))
                                 {
-                                    if(AP[*i].timest[j] <0)
+                                    if(week_num < 0)   //如果没有选择星期，则提示
                                     {
-                                        sprintf(str, "%s起始时间不能为空！", week[j]);
-                                        puthz(220, 660, str, 32, 33, 0);
-                                        delay(2000);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
-                                        break;
-                                    }
-                                    else if(AP[*i].timest[j] > 24*60*60)
-                                    {
-                                        sprintf(str, "%s起始时间不能大于24小时！", week[j]);
-                                        puthz(220, 660, str, 32, 33, 0);
-                                        delay(2000);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
-                                        break;
-                                    }
-                                    else if(AP[*i].timeed[j] <0)
-                                    {
-                                        sprintf(str, "%s终止时间不能为空！", week[j]);
-                                        puthz(220, 660, str, 32, 33, 0);
-                                        delay(2000);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
-                                        break;
-                                    }
-                                    else if(AP[*i].timeed[j] > 24*60*60)
-                                    {
-                                        sprintf(str, "%s终止时间不能大于24小时！", week[j]);
-                                        puthz(220, 660, str, 32, 33, 0);
-                                        delay(2000);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
-                                        break;
-                                    }
-                                    else if(AP[*i].timest[j] > AP[*i].timeed[j])
-                                    {
-                                        sprintf(str, "%s起始时间不能大于终止时间！", week[j]);
-                                        puthz(220, 660, str, 32, 33, 0);
-                                        delay(2000);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
-                                        break;
-                                    }
-                                    else if(AP[*i].timest[j] == AP[*i].timeed[j])
-                                    {
-                                        sprintf(str, "%s起始时间不能等于终止时间！", week[j]);
-                                        puthz(220, 660, str, 32, 33, 0);
-                                        delay(2000);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
-                                        break;
-                                    }
-                                    else 
-                                    {
-                                        AP[*i].allnp = 0;   //如果有一个时间段不为全路段禁停，则设置为0
-                                        area_update(AP[*i], *i);   //更新地点信息
                                         mouse_off(&mouse);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
-                                        puthz(220, 660, "地点信息修改成功！", 32, 33, 0);
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                        puthz(220, 660, "请选择星期！", 32, 33, 63488);
                                         delay(2000);
-                                        bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
                                         mouse_on(mouse);
-                                        esc = 1;
                                         break;
                                     }
-                                    
+                                    else if(time1 < 0)
+                                    {
+                                        mouse_off(&mouse);
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                        puthz(220, 660, "请输入正确的小时数！", 32, 33, 63488);
+                                        delay(2000);
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                        mouse_on(mouse);
+                                        break;
+                                    }
+                                    else if(time2 < 0)
+                                    {
+                                        mouse_off(&mouse);
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                        puthz(220, 660, "请输入正确的分钟数！", 32, 33, 63488);
+                                        delay(2000);
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                        mouse_on(mouse);
+                                        break;
+                                    }
+                                    else if(time3 < 0)
+                                    {
+                                        mouse_off(&mouse);
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                        puthz(220, 660, "请输入正确的秒数！", 32, 33, 63488);
+                                        delay(2000);
+                                        bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                        mouse_on(mouse);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        time = time1 * 3600 + time2 * 60 + time3;
+                                        if(ifstart)
+                                        {
+                                            if(time < 0L)
+                                            {
+                                                mouse_off(&mouse);
+                                                sprintf(str, "%s起始时间不能为空！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else if(time > 86400L)
+                                            {
+                                                sprintf(str, "%s起始时间不能大于二十四小时！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else if(time > AP[*i].timeed[week_num])
+                                            {
+                                                sprintf(str, "%s起始时间不能大于终止时间！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else if(time == AP[*i].timeed[week_num])
+                                            {
+                                                sprintf(str, "%s起始时间不能等于终止时间！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else 
+                                            {
+                                                AP[*i].timest[week_num] = time;   //更新起始时间
+                                                area_save(AP);                  //更新地点信息
+                                                mouse_off(&mouse);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, "时间信息修改成功！", 32, 33, 0);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                mouse_on(mouse);
+                                                esc = 1;
+                                                break;
+                                            }    
+                                        }
+                                        else
+                                        {
+                                            if(time < 0L)
+                                            {
+                                                sprintf(str, "%s终止时间不能为空！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else if(AP[*i].timeed[week_num] > 86400L)
+                                            {
+                                                sprintf(str, "%s终止时间不能大于二十四小时！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else if(AP[*i].timest[week_num] > time)
+                                            {
+                                                sprintf(str, "%s起始时间不能大于终止时间！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else if(AP[*i].timest[week_num] == time)
+                                            {
+                                                sprintf(str, "%s起始时间不能等于终止时间！", week[week_num]);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, str, 32, 33, 63488);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                break;
+                                            }
+                                            else 
+                                            {
+                                                AP[*i].timeed[week_num] = time;   //更新终止时间
+                                                area_save(AP);                  //更新地点信息
+                                                mouse_off(&mouse);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                puthz(220, 660, "时间信息修改成功！", 32, 33, 0);
+                                                delay(2000);
+                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                                mouse_on(mouse);
+                                                esc = 1;
+                                                break;
+                                            }    
+                                        }
+                                    }
                                 }
+                                continue;
                             }
-                            continue;
-                        }
-                        else if(mouse_in(220+32*9+90, 660, 220+32*9+90+80, 660+32))
-                        {
-                            mouse_trans(HAND);
-                            if(mouse_press(220+32*9+90, 660, 220+32*9+90+80, 660+32))
+                            else if(mouse_in(220+32*12+90, 660, 220+32*12+90+80, 660+32))
                             {
-                                mouse_off(&mouse);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);
-                                mouse_on(mouse);   //清除提示框
-                                break;
+                                mouse_trans(HAND);
+                                if(mouse_press(220+32*12+90, 660, 220+32*12+90+80, 660+32))
+                                {
+                                    mouse_off(&mouse);
+                                    bar1(220, 660-2, 220+700, 660+32+2, 65530);
+                                    mouse_on(mouse);   //清除提示框
+                                    break;
+                                }
+                                continue;
                             }
-                            continue;
+                            mouse_trans(CURSOR);
+                            delay(15);
                         }
-                        mouse_trans(CURSOR);
-                        delay(15);
                     }
                 } 
                 continue;
@@ -318,7 +524,7 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
                 if(mouse_press(850, 700, 850+140, 700+40))
                 {
                     mouse_off(&mouse);
-                    puthz(220, 660, "是否初始化该地点？", 32, 33, 57355);   //提示删除用户
+                    puthz(220, 660, "是否初始化该地点？", 32, 33, 63488);   //提示删除用户
                     rounded_button_d(220+32*9, 660, 80, 32, "确定", 5, 65498);   //确定按钮
                     rounded_button_d(220+32*9+90, 660, 80, 32, "取消", 5, 65498);   //取消按钮
                     mouse_on(mouse);
@@ -331,18 +537,19 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
                             mouse_trans(HAND);
                             if(mouse_press(220+32*9, 660, 220+32*9+80, 660+32))
                             {
+                                temp = AP[*i];   //初始化地点信息
                                 temp.allnp = 1;
-                                for(j=0; j<7; i++)
+                                for(j=0; j<7; j++)
                                 {
-                                    temp.timest[j] = 28800;
-                                    temp.timeed[j] = 79200;
+                                    temp.timest[j] = 28800L;
+                                    temp.timeed[j] = 79200L;
                                 }
                                 area_update(temp, *i);   //更新地点信息
                                 mouse_off(&mouse);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
                                 puthz(220, 660, "地点信息初始化成功！", 32, 33, 0);
                                 delay(2000);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
                                 mouse_on(mouse);
                                 esc = 1;
                                 break;
@@ -355,7 +562,7 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
                             if(mouse_press(220+32*9+90, 660, 220+32*9+80+90, 660+32))
                             {
                                 mouse_off(&mouse);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);     //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);     //清除提示框
                                 mouse_on(mouse);
                                 break;
                             }
@@ -392,7 +599,7 @@ void areainfo_display_ctrl(int * i, int * sidepage, int * page)
                 }
                 continue;
             }            
-            if(mouse_in(53, 720, 53+16*4, 720+16))
+            if(mouse_in(53, 720, 53+16*4, 720+16))      //返回主页
             {
                 mouse_trans(HAND);
                 if(mouse_press(53, 720, 53+16*4, 720+16))

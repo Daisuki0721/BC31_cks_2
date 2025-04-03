@@ -111,14 +111,58 @@ void userinfo_display_short(int unum)
         prt_hz16(330, 128, "否", 0, "hzk\\hzk16");
     }
     prt_hz16(200+16, 154, "违停记录次数：", 63519, "hzk\\hzk16");
-    itoa(temp.record_time, str, 10);
+    itoa(temp.record_times, str, 10);
     prt_asc16(330, 154, str, 0);
+}
+
+/*记录信息显示（32号字，用puthz函数）*/
+void record_display(int x, int y, Record rec)
+{
+    AREA AP[14] = {0};
+    char str[24] = {0};
+    char * week[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+    area_read(AP);          //读取地点信息
+
+    bar1(x+10, y, x+10+800, y+400, 65533);   //绘制背景
+    puthz(x+10, y, "记录信息", 32, 33, 0);
+    puthz(x+10, y+10+34, "违停时间：", 32, 33, 0);
+    puthz(x+10, y+10+2*34, "违停地点：", 32, 33, 0);
+    puthz(x+10, y+10+3*34, "用户阅读状态：", 32, 33, 0);
+    puthz(x+10, y+10+4*34, "申诉状态：", 32, 33, 0);
+    sprintf(str, "%04d/%02d/%02d %s %02d:%02d:%02d",
+            rec.year, rec.month, rec.day, week[rec.week], rec.hour, rec.minute, rec.second);
+    put_asc16_size(x+10+33*5, y+10+34, 2, 2, str, 0);
+    puthz(x+10+33*5, y+10+34*2, AP[rec.place].name, 32, 33, 0);
+    if(rec.readif == 0)
+    {
+        puthz(x+10+33*7, y+10+34*3, "未读", 32, 33, 0);
+    }
+    else
+    {
+        puthz(x+10+33*7, y+10+34*3, "已读", 32, 33, 0);
+    }
+    if(rec.appeal_state == 0)
+    {
+        puthz(x+10+33*7, y+10+34*4, "未申诉", 32, 33, 0);
+    }
+    else if(rec.appeal_state == 1)
+    {
+        puthz(x+10+33*7, y+10+34*4, "已申诉", 32, 33, 0);
+    }
+    else if(rec.appeal_state == 2)
+    {
+        puthz(x+10+33*7, y+10+34*4, "申诉成功", 32, 33, 0);
+    }
+    else if(rec.appeal_state == 3)
+    {
+        puthz(x+10+33*7, y+10+34*4, "申诉失败", 32, 33, 0);
+    }
 }
 
 /*记录控制面板*/
 void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
 {
-    int pos, rnum, i, j, k, rlistlen;
+    int pos, rnum, rnum_select, i, j, k, rlistlen;
     int  flag = 0, flag2 = 0, esc = 0;
     char str[3];
 	USER user = {0};
@@ -130,7 +174,6 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
 	user = UL.elem[*num];
 	DestroyUList(&UL);        //销毁线性表
 
-	InitRList(&RL);           //创建线性表
 	ReadAllRec(user, &RL);       //获取所有记录
     rlistlen = RL.length;		//获取记录长度
 
@@ -156,7 +199,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
             mouse_show(&mouse);
             if(rlistlen > 0)   //如果有记录
             {
-                for(rnum = 0; rnum < rlistlen; rnum++)
+                for(rnum = 0; rnum < rlistlen; rnum++)      //选择记录
                 {
                     j = (rnum % 12) % 4;
                     i = (rnum % 12) / 4;
@@ -171,6 +214,8 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                             puthz(x+8, y+164, "当前选择记录：", 16, 17, 0);
                             sprintf(str, "%d", rnum+1);
                             prt_asc16(x+128, y+164, str, 0);
+                            rnum_select = rnum;   //记录选择的记录编号
+                            break;
                         }
                         continue;
                     }
@@ -185,7 +230,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                     mouse_trans(HAND);
                     if(mouse_press(x+250, y+200, x+250+80, y+200+30))
                     {
-                        if(temp.position == 0)   //如果没有选择记录
+                        if(temp.record_time == 0)   //如果没有选择记录
                         {
                             bar1(x+8, y+158, x+452, y+158+30, 65530);
                             puthz(x+8, y+164, "请先选择记录！", 16, 17, 0);
@@ -194,15 +239,43 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                         }
                         else
                         {
-                            RListDelete(&RL, rnum);
-                            UpdataRec(user, temp);
-                            puthz(x+8, y+164, "删除成功！", 16, 17, 0);
+                            mouse_off(&mouse);
+                            // sprintf(str, "%d", rnum_select);
+                            // prt_asc16(x+8, y+164, str, 63488);
+                            // getch();
+                            RListDelete(user, rnum_select);
+                            bar1(x+8, y+158, x+452, y+158+30, 65530);
+                            puthz(x+8, y+164, "删除记录成功！", 16, 17, 0);
+                            delay(2000);
+                            bar1(x+8, y+158, x+452, y+158+30, 65530);
+                            mouse_on(mouse);
+                            esc = 1;
+                        }
+                    }
+                    continue;
+                }
+                if(mouse_in(x+350, y+200, x+350+80, y+200+30))  //如果点击确定
+                {
+                    mouse_trans(HAND);
+                    if(mouse_press(x+350, y+200, x+350+80, y+200+30))
+                    {
+                        if(temp.record_time == 0)   //如果没有选择记录
+                        {
+                            bar1(x+8, y+158, x+452, y+158+30, 65530);
+                            puthz(x+8, y+164, "请先选择记录！", 16, 17, 0);
                             delay(2000);
                             bar1(x+8, y+158, x+452, y+158+30, 65530);
                         }
+                        else
+                        {
+                            record_display(210, 300, temp);   //显示记录信息
+                        }
                     }
+                    continue;
                 }
             }
+
+
             
             if(mouse_in(x+50, y+200, x+50+150, y+200+30))  //如果点击返回主页
             {
@@ -216,7 +289,8 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                 }
                 continue;
             }
-            for(k=0; k<7; k++)
+
+            for(k=0; k<7; k++)                      //绘制用户按钮
             {
                 if(mouse_in(15, 150+k*75, 160, 210+k*75))
                 {
@@ -232,7 +306,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                     break;
                 }
             }
-            if(esc)   //如果点击返回，则退出循环
+            if(esc)                                 //如果点击返回，则退出循环
             {
                 break;
             }
@@ -241,6 +315,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                 flag2 = 0;
                 continue;
             }
+
             if((mouse_in(20, 680, 20+24*3, 680+24)) && (*sidepage > 1))  //控制翻页
             {
                 mouse_trans(HAND);
@@ -253,6 +328,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                 }
                 continue;
             }
+
             if((mouse_in(100, 680, 100+24*3, 680+24)) && (*sidepage * 7 <  ReadUserNum()))  //控制翻页
             {
                 mouse_trans(HAND);
@@ -264,7 +340,8 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                     break;
                 }
                 continue;
-            }            
+            }
+
             if(mouse_in(53, 720, 53+16*4, 720+16))      //如果点击返回主页
             {
                 mouse_trans(HAND);
@@ -286,8 +363,8 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
             mouse_off(&mouse);
             clear_window(MAINBOARD);
             mouse_on(mouse);
+            DestroyRList(&RL);        //销毁线性表
             break;
         }
     }    
-    DestroyRList(&RL);        //销毁线性表
 }

@@ -323,11 +323,10 @@ void user_select_ctrl(int x, int y, int num, int * sidepage)
             bar1(x, y, x+460, y+240, 65533);
             bar1(640, 15, 640+380, 15+25, 65533);
             mouse_on(mouse);
+        	DestroyUList(&UL);        //销毁线性表
             current_sidepage = 1;
             break;  
         }
     }
-
-	DestroyUList(&UL);        //销毁线性表
 }
 

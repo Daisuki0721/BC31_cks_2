@@ -47,7 +47,7 @@ void g_user_info_panel(int unum)
         puthz(330 + 100, 225, "否", 24, 26, 0); 
     }
     puthz(200, 275, "违停次数：", 24, 26, 0);
-    itoa(temp.record_time, str, 10);
+    itoa(temp.record_times, str, 10);
     prt_asc16(330, 280, str, 0);
 
     // 绘制返回按钮

@@ -18,17 +18,16 @@ typedef struct Record{
     int minute;
     int second;
 
-    /*记录地点*/
-    int place;
+    int place;      //记录地点
 
-    /*抓拍路径*/
-    char RecGraph[80];
+    char RecGraph[80];      //抓拍路径
 
-    /*第几次记录*/
-    int position;
+    int record_time;   //第几次违规
 
-    /*是否已读*/
-    int readif;
+    int readif;     //是否已读 0：未读 1：已读 2：更新
+
+    int appeal_state;   //申诉状态
+    //0：未申诉 1：已确认 2：已申诉 3：申诉成功 4：申诉失败
 } Record;
 
 typedef struct RecList
@@ -51,7 +50,7 @@ void ReadAllRec(USER temp, RecList * RL);
 int ReadRecNum(USER temp);
 
 /*更新记录信息*/
-int UpdataRec(USER temp, Record rec);
+int UpdataRec(USER temp, Record rec, int rnum);
 
 /*建立一个空表*/
 void InitRList(RecList * RL);
@@ -60,7 +59,7 @@ void InitRList(RecList * RL);
 void RListInsert(RecList * RL, Record r);
 
 /*删除元素*/
-void RListDelete(RecList * L, int i);
+void RListDelete(USER user, int i);
 
 /*若线性表L存在，销毁线性表*/
 void DestroyRList(RecList * RL);

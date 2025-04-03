@@ -32,8 +32,10 @@ int Check_info(UserList UL, char name[LEN], char code[LEN])
 **********************/
 int save_user(USER temp)
 {
+	int length=0, listsize = R_LIST_INIT_SIZE;					//接收线性表长度
 	UserList UL={0};
 	FILE *fp=NULL;
+	char path[40];
 	InitUList(&UL);
 	ReadAllUser(&UL);
 	if((fp=fopen("userinfo.dat", "rb+"))==NULL)		//首次使用时应创建文件
@@ -52,6 +54,22 @@ int save_user(USER temp)
 	    fwrite(UL.elem, sizeof(USER), UL.length, fp);
 	    fclose(fp);
 		DestroyUList(&UL);
+		sprintf(path, "record\\%s.r", temp.name);
+		if((fp = fopen(path, "wb+"))==NULL)
+		{
+			CloseSVGA();
+			printf("Can't create record file!");
+			delay(5000);
+			exit(1);
+		}
+		else
+		{
+			rewind(fp);
+			fwrite(&length, sizeof(int), 1, fp);
+			fwrite(&listsize, sizeof(int), 1, fp);
+			fclose(fp);
+			delay(10);
+		}
 		delay(500);
 		return 0;
 	}
@@ -223,7 +241,7 @@ void UListDelete(int i)
 	USER * q=NULL;
 	UserList UL={0};
 	FILE *fp=NULL;
-	char * path[40];
+	char path[40];
 	InitUList(&UL);		//初始化线性表
 	ReadAllUser(&UL);		//获取所有用户到线性表中
 	if((i<0)||(i>=UL.length)) //i的位置不合法 
@@ -259,7 +277,6 @@ void UListDelete(int i)
 		delay(500);
 		return 0;
 	}
-	
 }
 
 

@@ -28,4 +28,5 @@ void area_timesave(long * time, int * save);
 void area_timeread(long time, int * save);
 /*将非解析时间打印在指定位置*/
 void prt_time(int x, int y, long time);
+
 #endif

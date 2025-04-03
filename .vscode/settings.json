@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "SVGA.C": "cpp",
+        "CLREOL.C": "cpp",
+        "DIRECT.C": "cpp",
+        "IMPL2MSG.C": "cpp"
+    }
+}

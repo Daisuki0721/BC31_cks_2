@@ -31,7 +31,7 @@ void user_interface(int unum, int * func)
         {
             case 0:
             {
-                user_main_panel(&page);     //用户主控面板
+                user_main_panel(&page, user);     //用户主控面板
                 break;
             }
             case 1:
@@ -56,7 +56,7 @@ void user_interface(int unum, int * func)
             }
             case 5:
             {
-                user_mail_panel(&page);         //用户邮箱面板
+                user_mail_panel(&page, unum);         //用户邮箱面板
                 break;
             }
             case 6:
@@ -88,10 +88,11 @@ void user_interface(int unum, int * func)
 }
 
 /*用户主控制面板*/
-void user_main_panel(int * page)
+void user_main_panel(int * page, USER user)
 {
     mouse_off(&mouse);
     g_user_main_panel();        //绘制用户主控面板
+    mail_new_confirm(user, 155, 455);        //检查是否有新邮件
     mouse_on(mouse);
 
     /*用户主控面板选择*/
@@ -312,7 +313,7 @@ void userinfo_complete(USER user, int * page)
         telflag = 1;
         mailflag = 1;
         mouse_show(&mouse);
-        if(mouse_in(575, 245, 770, 285))
+        if(mouse_in(575, 245, 770, 285))    //车牌输入框
         {
             mouse_trans(TEXT);
             if(mouse_press(575, 245, 770, 285))
@@ -326,7 +327,7 @@ void userinfo_complete(USER user, int * page)
             }
             continue;
         }
-        else if(mouse_in(530, 295, 770, 335))
+        else if(mouse_in(530, 295, 770, 335))   //电话输入框
         {
             mouse_trans(TEXT);
             if(mouse_press(530, 295, 770, 335))
@@ -339,7 +340,7 @@ void userinfo_complete(USER user, int * page)
             }
             continue;
         }
-        else if(mouse_in(530, 345, 770, 385))
+        else if(mouse_in(530, 345, 770, 385))    //邮箱输入框
         {
             mouse_trans(TEXT);
             if(mouse_press(530, 345, 770, 385))
@@ -352,7 +353,7 @@ void userinfo_complete(USER user, int * page)
             }
             continue;
         }
-        else if(mouse_in(625, 402, 645, 422))
+        else if(mouse_in(625, 402, 645, 422))       //是否为校内人员
         {
             mouse_trans(HAND);
             if(mouse_press(625, 402, 645, 422))
@@ -379,7 +380,7 @@ void userinfo_complete(USER user, int * page)
             }
 
         }            
-        else if(mouse_in(622, 470, 772, 530))
+        else if(mouse_in(622, 470, 772, 530))     //确定按钮
         {
             mouse_trans(HAND);
             if(mouse_press(622, 470, 772, 530))
@@ -481,7 +482,7 @@ void userinfo_complete(USER user, int * page)
             } 
             continue;
         }
-        else if(mouse_in(432, 470, 582, 530))
+        else if(mouse_in(432, 470, 582, 530))       //取消按钮
         {
             mouse_trans(HAND);
             if(mouse_press(432, 470, 582, 530))

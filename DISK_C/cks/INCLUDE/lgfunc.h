@@ -22,7 +22,7 @@ typedef struct USER
 	char mail[MAIL_LEN];		//邮箱
 	int ifin;				//是否为校内人员
 
-	int record_time;	//违停次数
+	int record_times;	//违停次数
 } USER;				//用户结构体
 
 //暂时注释掉

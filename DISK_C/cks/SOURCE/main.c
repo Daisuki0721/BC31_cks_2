@@ -2,7 +2,7 @@
 
 void main()
 {          
-	int func=5;
+	int func=0;
     int unum=0;
 
     int i;

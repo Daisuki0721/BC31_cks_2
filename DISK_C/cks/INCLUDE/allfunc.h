@@ -44,6 +44,7 @@
 #include "recfunc.h"
 #include "area.h"
 #include "crt_user.h"
+#include "mail.h"
 
 /*************************/
 

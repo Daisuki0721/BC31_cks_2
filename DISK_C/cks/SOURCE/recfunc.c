@@ -23,11 +23,12 @@ int CreateRec(USER temp, int place, int maxlen)
 	/*记录地点信息*/
 	rec.place = place;
 	/*记录抓拍照片路径*/
-	temp.record_time++;		//记录加1
-	rec.position = temp.record_time;
+	temp.record_times++;		//记录加1
+	rec.record_time = temp.record_times;
 	rec.readif = 0;		//未读
+	rec.appeal_state = 0;	//未申诉
 	/*生成抓拍照片路径*/
-	sprintf(p, "bmp\\RecGraph\\%s%d.bmp", temp.name, temp.record_time);
+	sprintf(p, "bmp\\RecGraph\\%s%d.bmp", temp.name, temp.record_times);
 	strcpy(rec.RecGraph, p);
 	/*生成抓拍照片*/
 	//SaveBMP();		//等会再来写
@@ -154,7 +155,7 @@ int ReadRecNum(USER temp)
 参数说明：记录结构体 
 返回值：1：更新成功）    0：更新失败 
 *******************/
-int UpdataRec(USER temp, Record rec)
+int UpdataRec(USER temp, Record rec, int rnum)
 {
 	RecList RL = {0};				//记录线性表 
 	FILE * fp = NULL;
@@ -167,7 +168,7 @@ int UpdataRec(USER temp, Record rec)
 		delay(5000);
 		exit(1);
 	}
-	if(rec.position<=0 || rec.position > RL.listsize)		//如果插入位置不合法
+	if(rnum<0 || rnum > RL.listsize)		//如果更新位置不合法
 	{
 		fclose(fp);
 		DestroyRList(&RL);
@@ -175,13 +176,13 @@ int UpdataRec(USER temp, Record rec)
 	}
 	else
 	{
-		RL.elem[rec.position]=rec;		//更新线性表中用户信息 
+		RL.elem[rnum]=rec;		//更新线性表中用户信息 
 		fseek(fp, 0, SEEK_SET);
 		fwrite(&RL.length, sizeof(int), 1, fp);			//将线性表的相关信息写入文件
 		fwrite(&RL.listsize, sizeof(int), 1, fp);
-		fwrite(RL.elem, sizeof(USER), RL.length, fp);
+		fwrite(RL.elem, sizeof(Record), RL.length, fp);
 		fclose(fp);
-		DestroyUList(&RL);			//销毁线性表
+		DestroyRList(&RL);			//销毁线性表
 		return 1;
 	}
 }
@@ -212,7 +213,7 @@ void InitRList(RecList * RL)
 void RListInsert(RecList * RL, Record r) 
 {
 	Record * newbase = NULL;
-	newbase->position = RL->length + 1;		//记录次数标签
+	newbase->record_time = RL->length + 1;		//记录次数标签
 	if(RL->length >= RL->listsize)
 	{
 		if((newbase = (Record *)realloc(RL->elem, (RL->listsize+R_LISTINCEREMENT) * sizeof(Record)))==NULL)
@@ -232,28 +233,56 @@ void RListInsert(RecList * RL, Record r)
 
 /****************************
 功能说明：在线性表L中删除第i个元素，并用e返回其值
-参数说明：线性表地址，要删除的元素位置，接收删除元素的存储空间地址
+参数说明：用户结构体（获取名称），要删除的元素位置
 返回值：无 
 ****************************/
-void RListDelete(RecList * L, int i)
+void RListDelete(USER user, int i)
 {
+	RecList RL = {0};
+	char path[40];
+	FILE * fp;
 	Record * p = NULL;
 	Record * q = NULL;
-	if((i<0) || (i >= L->length)) 	//i的位置不合法 
+	ReadAllRec(user, &RL);
+	sprintf(path, "record\\%s.r", user.name);
+	if((i<0) || (i >= RL.length)) 	//i的位置不合法 
 	{
 		CloseSVGA();
 		printf("ListDelete Wrong!");
 		getch();
 		exit(1);
 	}
-	p = L->elem+i;  			//p为被删除元素位置
-	q = L->elem+L->length-1;  	//表尾元素的位置
+	p = RL.elem+i;  			//p为被删除元素位置
+	q = RL.elem+RL.length-1;  	//表尾元素的位置
 	for(p++; p<=q; p++)  		//被删除元素之后的元素左移
 	{
-		p->position-=1;
 		*(p-1) = *p;
 	}
-	L->length--;  		//表长减1
+	RL.length--;  		//表长减1
+	if((fp=fopen(path, "rb+"))==NULL)
+	{
+		prt_hz24(400, 400, "无法打开文件！", 10, "HZK\\Hzk24h");
+		delay(5000);
+		exit(1);
+	}
+	else
+	{
+		user.record_times--;			//用户违停数减一
+		if(UpdataUser(user) == -1)		//更新用户信息
+		{
+			fclose(fp);
+			DestroyRList(&RL);
+			return -1;
+		}
+		rewind(fp);
+		fwrite(&RL.length, sizeof(int), 1, fp);			//将线性表的相关信息写入文件
+		fwrite(&RL.listsize, sizeof(int), 1, fp);
+		fwrite(RL.elem, sizeof(Record), RL.length, fp);
+		fclose(fp);
+		DestroyRList(&RL);			//销毁线性表
+		delay(500);
+		return;
+	}
 }
 
 

@@ -114,7 +114,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
         puthz(200+24*11, 290, "否", 32, 33, 0);
     }
     puthz(200, 330, "违停次数：", 32, 33, 0);
-    itoa(temp.record_time, str, 10);
+    itoa(temp.record_times, str, 10);
     put_asc16_size(200+24*7, 330, 2, 2, str, 0);
     puthz(200, 370, "信息是否完善：", 32, 33, 0);
     if(temp.flag)
@@ -154,7 +154,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
             sys_time(200, 20);
             mouse_show(&mouse);
 
-            if(mouse_in(215+32*6, 465, 215+32*6+32, 465+32))
+            if(mouse_in(215+32*6, 465, 215+32*6+32, 465+32))    //修改车牌头
             {
                 mouse_trans(HAND);
                 if(mouse_press(215+32*6, 465, 215+32*6+32, 465+32))
@@ -164,7 +164,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                 continue;
             }
 
-            if(mouse_in(215+32*6+40, 465, 215+32*6+300, 465+32))
+            if(mouse_in(215+32*6+40, 465, 215+32*6+300, 465+32))    //修改车牌号
             {
                 mouse_trans(TEXT);
                 if(mouse_press(215+32*6+40, 465, 215+32*6+300, 465+32))
@@ -193,7 +193,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                 continue;
             }
 
-            if(mouse_in(215+32*6, 545, 215+32*6+300, 545+32))
+            if(mouse_in(215+32*6, 545, 215+32*6+300, 545+32))   //修改邮箱
             {
                 mouse_trans(TEXT);
                 if(mouse_press(215+32*6, 545, 215+32*6+300, 545+32))
@@ -267,10 +267,10 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                                 strcpy(temp_codeonly.code, "123456");   //初始化密码
                                 UpdataUser(temp_codeonly);   //更新用户信息
                                 mouse_off(&mouse);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
                                 puthz(220, 660, "密码初始化成功！", 32, 33, 0);
                                 delay(2000);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
                                 mouse_on(mouse);
                                 break;
                             }
@@ -282,7 +282,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                             if(mouse_press(220+32*9+90, 660, 220+32*9+90+80, 660+32))
                             {
                                 mouse_off(&mouse);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框  //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框  //清除提示框
                                 mouse_on(mouse);
                                 break;
                             }
@@ -304,7 +304,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                     {
                         puthz(220, 660, "该用户还未完善信息！", 32, 33, 0);
                         delay(2000);
-                        bar1(220, 660-2, 220+500, 660+32+2, 65530);
+                        bar1(220, 660-2, 220+700, 660+32+2, 65530);
                         break;
                     }
                     else
@@ -371,10 +371,10 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                                                                 temp.flag=1;        //保存并退出循环
                                                                 mouse_off(&mouse);
                                                                 UpdataUser(temp);
-                                                                bar1(220, 660-2, 220+500, 660+32+2, 65530);     //清除提示框
+                                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);     //清除提示框
                                                                 puthz(220, 660, "用户信息修改成功", 32, 33, 0);
                                                                 delay(2000);
-                                                                bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
+                                                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
                                                                 mouse_on(mouse);
                                                                 esc = 1;
                                                                 break;
@@ -430,7 +430,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                                 if(mouse_press(220+32*9+90, 660, 220+32*9+90+80, 660+32))
                                 {
                                     mouse_off(&mouse);
-                                    bar1(220, 660-2, 220+500, 660+32+2, 65530);
+                                    bar1(220, 660-2, 220+700, 660+32+2, 65530);
                                     mouse_on(mouse);   //清除提示框
                                     break;
                                 }
@@ -465,7 +465,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                             {
                                 UListDelete(*unum);        //删除用户
                                 mouse_off(&mouse);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);   //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
                                 puthz(220, 660, "删除用户成功！即将返回上级……", 32, 33, 57355);
                                 delay(2000);
                                 *page = 0;   //返回上级
@@ -481,7 +481,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                             if(mouse_press(220+32*9+90, 660, 220+32*9+80+90, 660+32))
                             {
                                 mouse_off(&mouse);
-                                bar1(220, 660-2, 220+500, 660+32+2, 65530);     //清除提示框
+                                bar1(220, 660-2, 220+700, 660+32+2, 65530);     //清除提示框
                                 mouse_on(mouse);
                                 break;
                             }

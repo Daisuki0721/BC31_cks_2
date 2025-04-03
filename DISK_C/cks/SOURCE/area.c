@@ -29,7 +29,7 @@ void area_init(void)
     fwrite(&temp, sizeof(AREA), 1, fp);
 
     temp.num = 2;
-    strcpy(temp.name, "摄像头");
+    strcpy(temp.name, "摄像头二");
     temp.allnp = 1;
     for(i=0; i<7; i++)
     {
@@ -41,7 +41,7 @@ void area_init(void)
     fwrite(&temp, sizeof(AREA), 1, fp);
 
     temp.num = 3;
-    strcpy(temp.name, "摄像头");
+    strcpy(temp.name, "摄像头三");
     temp.allnp = 1;
     for(i=0; i<7; i++)
     {
@@ -53,7 +53,7 @@ void area_init(void)
     fwrite(&temp, sizeof(AREA), 1, fp);
 
     temp.num = 4;
-    strcpy(temp.name, "摄像头");
+    strcpy(temp.name, "摄像头四");
     temp.allnp = 1;
     for(i=0; i<7; i++)
     {
@@ -65,7 +65,7 @@ void area_init(void)
     fwrite(&temp, sizeof(AREA), 1, fp);
 
     temp.num = 5;
-    strcpy(temp.name, "摄像头");
+    strcpy(temp.name, "摄像头五");
     temp.allnp = 1;
     for(i=0; i<7; i++)
     {
@@ -222,15 +222,15 @@ void area_read(AREA * AL)
 void area_update(AREA temp, int i)
 {
     FILE * fp;
-    AREA * AL = NULL;
-    if((fp = fopen("area.dat", "rb")) == NULL)
+    AREA AL[14];
+    area_read(AL);
+    if((fp = fopen("area.dat", "wb")) == NULL)
     {
         CloseSVGA();
         printf("Cannot open file!");
         getch();
         exit(1);
     }
-    area_read(AL);
     AL[i] = temp;
     rewind(fp);
     fwrite(AL, sizeof(AREA), 14, fp);
@@ -241,7 +241,7 @@ void area_update(AREA temp, int i)
 void area_save(AREA * AL)
 {
     FILE * fp;
-    if((fp = fopen("area.dat", "rb")) == NULL)
+    if((fp = fopen("area.dat", "wb")) == NULL)
     {
         CloseSVGA();
         printf("Cannot open file!");
@@ -288,3 +288,4 @@ void prt_time(int x, int y, long time)
     sprintf(temp, "%02d:%02d:%02d", save[0], save[1], save[2]);
     prt_asc16(x, y, temp, 0);
 }
+

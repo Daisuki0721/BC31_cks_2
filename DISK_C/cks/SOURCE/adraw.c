@@ -204,7 +204,7 @@ void user_select_draw(int x, int y, int sidepage)
     rounded_button_d(x+250, y+200, 80, 30, "返回", 3, 65498);
     rounded_button_d(x+350, y+200, 80, 30, "确定", 3, 65498);
 
-	puthz(660, 15, "若要切换摄像头，请先点击返回！", 24, 25, 63488);
+	puthz(640, 15, "若要切换摄像头，请先点击返回！", 24, 25, 63488);
 
 	DestroyUList(&UL);        //销毁线性表
 }
@@ -217,13 +217,12 @@ void record_select_draw(int x, int y, int num)
 	USER temp = {0};
 	Record record = {0};
 	UserList UL = {NULL, 0, 0};          //用户线性表
-	RecList RL = {NULL, 0, 0};          //记录线性表
 	InitUList(&UL);           //创建线性表
 	ReadAllUser(&UL);         //获取所有用户
 	temp = UL.elem[num];
 	DestroyUList(&UL);        //销毁线性表
 
-	reclistlen = ReadRecNum(temp);		//获取记录长度
+	reclistlen = ReadRecNum(temp);	//获取记录长度
 
 	bar1(x, y, x+460, y+240, 33808);
 	bar1(x+5, y+5, x+455, y+235, 65530);
@@ -231,6 +230,7 @@ void record_select_draw(int x, int y, int num)
 	{
 		j = (rnum % 12) % 4;
 		i = (rnum % 12) / 4;
+		
 		sprintf(str, "record%d", rnum+1);
 		rounded_button_asc(x+8+i*150, y+10+j*37, 144, 30, str, 3, 59391);
 	}
@@ -241,9 +241,7 @@ void record_select_draw(int x, int y, int num)
 		rounded_button_d(x+250, y+200, 80, 30, "删除", 3, 65498);
 		rounded_button_d(x+350, y+200, 80, 30, "确定", 3, 65498);
 	}
-
-
-	DestroyRList(&RL);        //销毁线性表
+	puthz(x+8, y+244, "请不要随意删除记录！", 24, 25, 63488);
 }
 
 /*高亮按钮切换函数(用户)*/
@@ -303,6 +301,90 @@ void highlight_switch_area(int i, int sidepage)
 	}
     
 	mouse_on(mouse);
+}
+
+/*高亮按钮切换函数(记录)*/
+void highlight_switch_record(USER user, int rnum, int sidepage)
+{
+    static int last = 0;    //上一次点击的按钮
+    static int lastsidepage = 1;    //上一次的页面
+	char str[10] = {0};
+    RecList RL = {NULL, 0, 0};          //记录线性表
+
+    ReadAllRec(user, &RL);         //获取所有记录
+
+	mouse_off(&mouse);
+
+    if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
+    {
+		sprintf(str, "record%d", last+1);
+        rounded_button_asc(15, 150+(last%7)*75, 145, 60, str, 5, 65498);
+    }
+    else
+    {
+        lastsidepage = sidepage;
+    }
+    last = rnum;
+    
+	if(lastsidepage)
+	{
+		sprintf(str, "record%d", rnum+1);
+		rounded_button_asc(15, 150+(rnum%7)*75, 145, 60, str, 5, 65504);
+	}
+    
+	mouse_on(mouse);
+
+    DestroyRList(&RL);        //销毁线性表
+}
+
+/*高亮按钮切换函数(邮件)*/
+void highlight_switch_mail(USER user, int rnum, int sidepage)
+{
+    static int last = 0;    //上一次点击的按钮
+    static int lastsidepage = 1;    //上一次的页面
+	char str[10] = {0};
+    RecList RL = {NULL, 0, 0};          //记录线性表
+	
+	ReadAllRec(user, &RL);         //获取所有记录
+
+	mouse_off(&mouse);
+
+    if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
+    {
+		sprintf(str, "mail%d", last+1);
+        rounded_button_asc(15, 150+(last%7)*75, 145, 60, str, 5, 65498);
+		if(RL.elem[last].readif == 0)
+        {
+            puthz(126, 150+(last%7)*75+2, "未读", 16, 16, 63488);
+        }
+        else
+        {
+            puthz(126, 150+(last%7)*75+2, "已读", 16, 16, 33808);
+        }
+    }
+    else
+    {
+        lastsidepage = sidepage;
+    }
+    last = rnum;
+    
+	if(lastsidepage)
+	{
+		sprintf(str, "mail%d", rnum+1);
+		rounded_button_asc(15, 150+(rnum%7)*75, 145, 60, str, 5, 65504);
+		if(RL.elem[rnum].readif == 0)
+        {
+            puthz(126, 150+(rnum%7)*75+2, "未读", 16, 16, 63488);
+        }
+        else
+        {
+            puthz(126, 150+(rnum%7)*75+2, "已读", 16, 16, 33808);
+        }
+	}
+    
+	mouse_on(mouse);
+
+    DestroyRList(&RL);        //销毁线性表
 }
 
 /*在指定位置输出一个星期几(使用puthz函数)*/
@@ -387,4 +469,27 @@ void sys_time(int x, int y)
         prt_asc16(x, y, str, 0);
         mouse_on(mouse);
     }
+}
+
+void puthz_lines(int x, int y, char * str1, char * str2, char * str3, char * str4, char * str5, char * str6, char * str7, char * str8,
+	char * str9, char * str10, char * str11, char * str12, char * str13, char * str14, char * str15, char * str16, char * str17, char * str18)
+{
+	puthz(x, y, str1, 32, 33, 0);
+	puthz(x, y+34, str2, 32, 33, 0);
+	puthz(x, y+68, str3, 32, 33, 0);
+	puthz(x, y+102, str4, 32, 33, 0);
+	puthz(x, y+136, str5, 32, 33, 0);
+	puthz(x, y+170, str6, 32, 33, 0);
+	puthz(x, y+204, str7, 32, 33, 0);
+	puthz(x, y+238, str8, 32, 33, 0);
+	puthz(x, y+272, str9, 32, 33, 0);
+	puthz(x, y+306, str10, 32, 33, 0);
+	puthz(x, y+340, str11, 32, 33, 0);
+	puthz(x, y+374, str12, 32, 33, 0);
+	puthz(x, y+408, str13, 32, 33, 0);
+	puthz(x, y+442, str14, 32, 33, 0);
+	puthz(x, y+476, str15, 32, 33, 0);
+	puthz(x, y+510, str16, 32, 33, 0);
+	puthz(x, y+544, str17, 32, 33, 0);
+	puthz(x, y+578, str18, 32, 33, 0);
 }
