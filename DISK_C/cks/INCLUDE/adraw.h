@@ -47,6 +47,8 @@ void highlight_switch_area(int i, int sidepage);
 void highlight_switch_record(USER user, int rnum, int sidepage);
 /*高亮按钮切换函数（邮件）*/
 void highlight_switch_record(USER user, int rnum, int sidepage);
+/*高亮按钮切换函数(申诉)*/
+void highlight_switch_appeal(USER user, int rnum, int sidepage);
 /*在指定位置输出一个星期几(使用puthz函数)*/
 /*flag为星期几代号，size为字号大小（可选16，24，32，48）*/
 void put_week(int x, int y, int flag, int size, int color);

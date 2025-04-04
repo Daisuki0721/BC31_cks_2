@@ -5,7 +5,7 @@ void user_interface(int unum, int * func)
 {
     int page=0;
 
-    struct USER user = {"\0", "\0", 0, 0, "\0", "\0", "\0", 0, 0};	//用户
+    struct USER user = {"\0", "\0", 0, 0, "\0", "\0", "\0", 0, 0, 0};	//用户
 	UserList UL = {NULL, 0, 0};          //线性表
 	InitUList(&UL);           //创建线性表
 	ReadAllUser(&UL);         //获取所有用户  
@@ -36,12 +36,12 @@ void user_interface(int unum, int * func)
             }
             case 1:
             {
-                user_record_panel(&page);      //用户违停记录面板
+                user_record_panel(&page, unum);      //用户违停记录面板
                 break;
             }
             case 2:
             {
-                user_dispose_panel(&page);      //用户违停处理面板
+                user_dispose_panel(&page, unum);      //用户违停处理面板
                 break;
             }
             case 3:
@@ -255,7 +255,7 @@ void g_user_interface(void)
 void g_user_main_panel(void)
 {
     int i;
-    char * proj[8]={"违停记录", "违停处理", "范围查询", "车主须知",
+    char * proj[8]={"违停记录", "处理或申诉", "范围查询", "车主须知",
         "邮箱", "个人信息", "常见问题", "退出登录"};
     clear_window(ALLBOARD);
     for(i=0; i<8; i++)

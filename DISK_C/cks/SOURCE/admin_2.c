@@ -116,7 +116,7 @@ void userinfo_display_short(int unum)
 }
 
 /*记录信息显示（32号字，用puthz函数）*/
-void record_display(int x, int y, Record rec)
+void record_display_admin(int x, int y, Record rec)
 {
     AREA AP[14] = {0};
     char str[24] = {0};
@@ -128,7 +128,7 @@ void record_display(int x, int y, Record rec)
     puthz(x+10, y+10+34, "违停时间：", 32, 33, 0);
     puthz(x+10, y+10+2*34, "违停地点：", 32, 33, 0);
     puthz(x+10, y+10+3*34, "用户阅读状态：", 32, 33, 0);
-    puthz(x+10, y+10+4*34, "申诉状态：", 32, 33, 0);
+    puthz(x+10, y+10+4*34, "确认、申诉状态：", 32, 33, 0);
     sprintf(str, "%04d/%02d/%02d %s %02d:%02d:%02d",
             rec.year, rec.month, rec.day, week[rec.week], rec.hour, rec.minute, rec.second);
     put_asc16_size(x+10+33*5, y+10+34, 2, 2, str, 0);
@@ -143,19 +143,35 @@ void record_display(int x, int y, Record rec)
     }
     if(rec.appeal_state == 0)
     {
-        puthz(x+10+33*7, y+10+34*4, "未申诉", 32, 33, 0);
+        puthz(x+10+33*8, y+10+34*4, "未申诉", 32, 33, 0);
     }
     else if(rec.appeal_state == 1)
     {
-        puthz(x+10+33*7, y+10+34*4, "已申诉", 32, 33, 0);
+        puthz(x+10+33*8, y+10+34*4, "已确认", 32, 33, 0);
     }
     else if(rec.appeal_state == 2)
     {
-        puthz(x+10+33*7, y+10+34*4, "申诉成功", 32, 33, 0);
+        puthz(x+10+33*8, y+10+34*4, "申诉中", 32, 33, 64384);
     }
     else if(rec.appeal_state == 3)
     {
-        puthz(x+10+33*7, y+10+34*4, "申诉失败", 32, 33, 0);
+        puthz(x+10+33*8, y+10+34*4, "申诉成功", 32, 33, 2016);
+    }
+    else if(rec.appeal_state == 4)
+    {
+        puthz(x+10+33*8, y+10+34*4, "申诉失败", 32, 33, 63488);
+    }
+    else if(rec.appeal_state == 5)
+    {
+        puthz(x+10+33*8, y+10+34*4, "申诉成功已确认", 32, 33, 0);
+    }
+    else if(rec.appeal_state == 6)
+    {
+        puthz(x+10+33*8, y+10+34*4, "申诉失败已确认", 32, 33, 0);
+    }
+    else if(rec.appeal_state == 7)
+    {
+        puthz(x+10+33*8, y+10+34*4, "撤销申诉", 32, 33, 0);
     }
 }
 
@@ -169,6 +185,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
 	Record temp = {0};
 	UserList UL = {NULL, 0, 0};          //用户线性表
 	RecList RL = {NULL, 0, 0};          //记录线性表
+
 	InitUList(&UL);           //创建线性表
 	ReadAllUser(&UL);         //获取所有用户
 	user = UL.elem[*num];
@@ -193,6 +210,9 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
             bar1(x+8, y+158, x+452, y+158+30, 65530);
             puthz(x+8, y+164, "当前用户没有记录！", 16, 17, 0);
         }
+
+        record_state_display(210, 500, user, 1);   //显示记录状态
+
         while(1)
         {
             sys_time(200, 20);
@@ -214,6 +234,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                             puthz(x+8, y+164, "当前选择记录：", 16, 17, 0);
                             sprintf(str, "%d", rnum+1);
                             prt_asc16(x+128, y+164, str, 0);
+                            record_display_admin(210, 300, temp);   //显示记录信息
                             rnum_select = rnum;   //记录选择的记录编号
                             break;
                         }
@@ -254,7 +275,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                     }
                     continue;
                 }
-                if(mouse_in(x+350, y+200, x+350+80, y+200+30))  //如果点击确定
+                if(mouse_in(x+350, y+200, x+350+80, y+200+30))  //如果点击刷新
                 {
                     mouse_trans(HAND);
                     if(mouse_press(x+350, y+200, x+350+80, y+200+30))
@@ -268,7 +289,7 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                         }
                         else
                         {
-                            record_display(210, 300, temp);   //显示记录信息
+                            record_display_admin(210, 300, temp);   //显示记录信息
                         }
                     }
                     continue;
@@ -368,3 +389,41 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
         }
     }    
 }
+
+/*用户记录状态打印*/
+void record_state_display(int x, int y, USER user, int ifadmin)
+{
+    char str[3];
+    RecState recstate = {0};
+
+    RecStateCount(user, &recstate);   //获取记录状态统计
+
+    if(ifadmin)   //如果是管理员
+    {
+        puthz(x+10, y, "当前用户记录状态统计", 32, 33, 0);
+    }
+    else
+    {
+        puthz(x+10, y, "您的违停记录状态统计", 32, 33, 0);
+    }
+    
+    puthz(x+10, y+10+34, "未处理记录数：", 32, 33, 0);
+    puthz(x+10, y+10+2*34, "已确认记录数：", 32, 33, 0);
+    puthz(x+10, y+10+3*34, "申诉中记录数：", 32, 33, 0);
+    puthz(x+10, y+10+4*34, "申诉成功记录数：", 32, 33, 0);
+    puthz(x+10, y+10+5*34, "申诉失败记录数：", 32, 33, 0);
+    puthz(x+10, y+10+6*34, "撤销申诉记录数：", 32, 33, 0);
+    itoa(recstate.not_appeal, str, 10);
+    put_asc16_size(x+10+33*7, y+10+34*1, 2, 2, str, 0);
+    itoa(recstate.confirmed,str ,10);
+    put_asc16_size(x+10+33*7,y +10 +34*2 ,2 ,2 ,str ,0 );
+    itoa(recstate.appealed,str ,10);
+    put_asc16_size(x +10 +33*7,y +10 +34*3 ,2 ,2 ,str ,0 );
+    itoa(recstate.appealed_success,str ,10);
+    put_asc16_size(x +10 +33*8,y +10 +34*4 ,2 ,2 ,str ,0 );
+    itoa(recstate.appealed_fail,str ,10);
+    put_asc16_size(x +10 +33*8,y +10 +34*5 ,2 ,2 ,str ,0 );
+    itoa(recstate.appealed_cancel,str ,10);
+    put_asc16_size(x +10 +33*8,y +10 +34*6 ,2 ,2 ,str ,0 );
+}
+

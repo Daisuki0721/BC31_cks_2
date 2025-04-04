@@ -239,7 +239,7 @@ void record_select_draw(int x, int y, int num)
 	if(reclistlen > 0)
 	{
 		rounded_button_d(x+250, y+200, 80, 30, "删除", 3, 65498);
-		rounded_button_d(x+350, y+200, 80, 30, "确定", 3, 65498);
+		rounded_button_d(x+350, y+200, 80, 30, "刷新", 3, 65498);
 	}
 	puthz(x+8, y+244, "请不要随意删除记录！", 24, 25, 63488);
 }
@@ -315,26 +315,33 @@ void highlight_switch_record(USER user, int rnum, int sidepage)
 
 	mouse_off(&mouse);
 
-    if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
-    {
-		sprintf(str, "record%d", last+1);
-        rounded_button_asc(15, 150+(last%7)*75, 145, 60, str, 5, 65498);
-    }
-    else
-    {
-        lastsidepage = sidepage;
-    }
-    last = rnum;
-    
-	if(lastsidepage)
+    if(RL.length == 0)        //如果没有记录，返回
 	{
-		sprintf(str, "record%d", rnum+1);
-		rounded_button_asc(15, 150+(rnum%7)*75, 145, 60, str, 5, 65504);
+		mouse_on(mouse);
+		DestroyRList(&RL);        //销毁线性表
+		return;
 	}
-    
-	mouse_on(mouse);
-
-    DestroyRList(&RL);        //销毁线性表
+	else
+	{
+		if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
+		{
+			sprintf(str, "record%d", last+1);
+			rounded_button_asc(15, 150+(last%7)*75, 145, 60, str, 5, 65498);
+		}
+		else
+		{
+			lastsidepage = sidepage;
+		}
+		last = rnum;
+		
+		if(lastsidepage)
+		{
+			sprintf(str, "record%d", rnum+1);
+			rounded_button_asc(15, 150+(rnum%7)*75, 145, 60, str, 5, 65504);
+		}
+		mouse_on(mouse);
+		DestroyRList(&RL);        //销毁线性表
+	}
 }
 
 /*高亮按钮切换函数(邮件)*/
@@ -349,42 +356,134 @@ void highlight_switch_mail(USER user, int rnum, int sidepage)
 
 	mouse_off(&mouse);
 
-    if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
-    {
-		sprintf(str, "mail%d", last+1);
-        rounded_button_asc(15, 150+(last%7)*75, 145, 60, str, 5, 65498);
-		if(RL.elem[last].readif == 0)
-        {
-            puthz(126, 150+(last%7)*75+2, "未读", 16, 16, 63488);
-        }
-        else
-        {
-            puthz(126, 150+(last%7)*75+2, "已读", 16, 16, 33808);
-        }
-    }
-    else
-    {
-        lastsidepage = sidepage;
-    }
-    last = rnum;
-    
-	if(lastsidepage)
+    if(RL.length == 0)        //如果没有记录，返回
 	{
-		sprintf(str, "mail%d", rnum+1);
-		rounded_button_asc(15, 150+(rnum%7)*75, 145, 60, str, 5, 65504);
-		if(RL.elem[rnum].readif == 0)
-        {
-            puthz(126, 150+(rnum%7)*75+2, "未读", 16, 16, 63488);
-        }
-        else
-        {
-            puthz(126, 150+(rnum%7)*75+2, "已读", 16, 16, 33808);
-        }
+		mouse_on(mouse);
+		DestroyRList(&RL);        //销毁线性表
+		return;
 	}
-    
-	mouse_on(mouse);
+	else
+	{
+		if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
+		{
+			sprintf(str, "mail%d", last+1);
+			rounded_button_asc(15, 150+(last%7)*75, 145, 60, str, 5, 65498);
+			if(RL.elem[last].readif == 0)
+			{
+				puthz(126, 150+(last%7)*75+2, "未读", 16, 16, 63488);
+			}
+			else
+			{
+				puthz(126, 150+(last%7)*75+2, "已读", 16, 16, 33808);
+			}
+		}
+		else
+		{
+			lastsidepage = sidepage;
+		}
+		last = rnum;
+		
+		if(lastsidepage)
+		{
+			sprintf(str, "mail%d", rnum+1);
+			rounded_button_asc(15, 150+(rnum%7)*75, 145, 60, str, 5, 65504);
+			if(RL.elem[rnum].readif == 0)
+			{
+				puthz(126, 150+(rnum%7)*75+2, "未读", 16, 16, 63488);
+			}
+			else
+			{
+				puthz(126, 150+(rnum%7)*75+2, "已读", 16, 16, 33808);
+			}
+		}
+		
+		mouse_on(mouse);
 
-    DestroyRList(&RL);        //销毁线性表
+		DestroyRList(&RL);        //销毁线性表
+	}
+}
+
+/*高亮按钮切换函数(申诉)*/
+void highlight_switch_appeal(USER user, int rnum, int sidepage)
+{
+	static int last = 0;    //上一次点击的按钮
+	static int lastsidepage = 1;    //上一次的页面
+	char str[10] = {0};
+	RecList APL = {NULL, 0, 0};          //记录线性表
+
+	RecListToAppealList(user, &APL);         //获取所有申诉记录
+
+	mouse_off(&mouse);
+
+	if(APL.length == 0)        //如果没有申诉，返回
+	{
+		mouse_on(mouse);
+		DestroyRList(&APL);        //销毁线性表
+		return;
+	}
+	else
+	{
+		if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
+		{
+			sprintf(str, "appeal%d", last+1);
+			rounded_button_asc(15, 150+(last%7)*75, 145, 60, str, 5, 65498);
+			if(APL.elem[last].appeal_state == 0)
+			{
+				puthz(110, 150+(last%7)*75+2, "未处理", 16, 16, 63488);
+			}
+			else if(APL.elem[last].appeal_state == 2)
+			{
+				puthz(110, 150+(last%7)*75+2, "申诉中", 16, 16, 63488);
+			}
+			else if(APL.elem[last].appeal_state == 3)
+			{
+				puthz(94, 150+(last%7)*75+2, "申诉成功", 16, 16, 2016);
+			}
+			else if(APL.elem[last].appeal_state == 4)
+			{
+				puthz(94, 150+(last%7)*75+2, "申诉失败", 16, 16, 63488);
+			}
+			else if(APL.elem[last].appeal_state == 7)
+			{
+				puthz(94, 150+(last%7)*75+2, "申诉撤销", 16, 16, 63488);
+			}
+		}
+		else
+		{
+			lastsidepage = sidepage;
+		}
+		last = rnum;
+		
+		if(lastsidepage)
+		{
+			sprintf(str, "appeal%d", rnum+1);
+			rounded_button_asc(15, 150+(rnum%7)*75, 145, 60, str, 5, 65504);
+			if(APL.elem[last].appeal_state == 0)
+			{
+				puthz(110, 150+(last%7)*75+2, "未处理", 16, 16, 63488);
+			}
+			else if(APL.elem[last].appeal_state == 2)
+			{
+				puthz(110, 150+(last%7)*75+2, "申诉中", 16, 16, 63488);
+			}
+			else if(APL.elem[last].appeal_state == 3)
+			{
+				puthz(94, 150+(last%7)*75+2, "申诉成功", 16, 16, 2016);
+			}
+			else if(APL.elem[last].appeal_state == 4)
+			{
+				puthz(94, 150+(last%7)*75+2, "申诉失败", 16, 16, 63488);
+			}
+			else if(APL.elem[last].appeal_state == 7)
+			{
+				puthz(94, 150+(last%7)*75+2, "申诉撤销", 16, 16, 63488);
+			}
+		}
+
+		mouse_on(mouse);
+
+		DestroyRList(&APL);        //销毁线性表
+	}
 }
 
 /*在指定位置输出一个星期几(使用puthz函数)*/

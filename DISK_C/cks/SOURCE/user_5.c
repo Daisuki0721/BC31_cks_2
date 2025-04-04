@@ -15,10 +15,6 @@ void user_mail_panel(int * page, int unum)
     mouse_trans(CURSOR);
     delay(100);
 
-    mouse_off(&mouse);
-    mouse_trans(CURSOR);
-    delay(100);
-
     g_user_mail_panel(sidepage, user);
 
     mouse_on(mouse);
@@ -78,15 +74,15 @@ void g_user_mail_panel(int sidepage, USER user)
     int i, pos, rnum;
     char str[20] = {0};
     RecList RL = {NULL, 0, 0};          //记录线性表
-    InitUList(&RL);           //创建线性表
+
     ReadAllRec(user, &RL);         //获取所有记录
     pos = 7 * (sidepage - 1);		//计算控制区间
 
-    mouse_off(&mouse);
     clear_window(ALLBOARD);
+
     for(i=0, rnum = pos; (rnum < pos + 7) && (rnum < RL.length); rnum++, i++)       //控制翻页
     {
-        sprintf(str, "mail%d", i+1);
+        sprintf(str, "mail%d", rnum+1);
         rounded_button_asc(15, 150+i*75, 145, 60, str, 5, 65498);
         if(RL.elem[rnum].readif == 0)
         {
@@ -107,7 +103,6 @@ void g_user_mail_panel(int sidepage, USER user)
 	}
     prt_hz16(53, 720, "返回上级", 63519, "hzk\\hzk16");
 
-    mouse_on(mouse);
     DestroyRList(&RL);      //销毁线性表
 }
 
@@ -127,7 +122,6 @@ void mail_info_display_ctrl(USER user, int * rec, int * sidepage, int * page)
 
     mouse_on(mouse);
 
-    InitUList(&RL);           //创建线性表
     ReadAllRec(user, &RL);         //获取所有记录
     pos = 7 * (*sidepage - 1);		//计算控制区间
 
@@ -141,7 +135,7 @@ void mail_info_display_ctrl(USER user, int * rec, int * sidepage, int * page)
             {
                 puthz(15, 150+2, "当前没有邮件！", 24, 25, 0);
             }
-            for(k = pos; (k < (pos+7)) && (k < RL.length); k++)                      //邮件选择按钮
+            for(k = 0; (k < 7) && (k+(*sidepage-1)*7) < RL.length; k++)          //邮件选择按钮
             {
                 if(mouse_in(15, 150+k*75, 160, 210+k*75))
                 {

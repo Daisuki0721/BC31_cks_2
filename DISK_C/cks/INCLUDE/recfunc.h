@@ -7,7 +7,10 @@
 
 #define LEN 10
 
+/*记录结构体*/
 typedef struct Record{
+    int id;         //记录编号
+
     /*记录时间*/
     int year;
     int month;
@@ -27,9 +30,21 @@ typedef struct Record{
     int readif;     //是否已读 0：未读 1：已读 2：更新
 
     int appeal_state;   //申诉状态
-    //0：未申诉 1：已确认 2：已申诉 3：申诉成功 4：申诉失败
+    //0：未申诉 1：已确认 2：申诉中 3：申诉成功 4：申诉失败 5.申诉成功已确认 6.申诉失败已确认 7.撤销申诉
 } Record;
 
+/*记录状态统计结构体*/
+typedef struct RecState
+{
+    int not_appeal;   //未申诉记录数
+    int confirmed;      //已确认记录数
+    int appealed;    //申诉中记录数
+    int appealed_success;   //申诉成功记录数
+    int appealed_fail;   //申诉失败记录数
+    int appealed_cancel;   //已撤销申诉记录数
+} RecState;
+
+/************************************************************************** */
 typedef struct RecList
 {
 	struct Record * elem;    //存储空间基值
@@ -63,5 +78,11 @@ void RListDelete(USER user, int i);
 
 /*若线性表L存在，销毁线性表*/
 void DestroyRList(RecList * RL);
+
+/*用户记录状态统计*/
+void RecStateCount(USER user, RecState * recstate);
+
+/*记录线性表处理为申诉线性表*/
+int RecListToAppealList(USER user, RecList * RL);
 
 #endif

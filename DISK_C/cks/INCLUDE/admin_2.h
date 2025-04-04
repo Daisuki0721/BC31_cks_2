@@ -11,5 +11,7 @@ void g_admin_record_panel(int sidepage);
 void userinfo_display_short(int unum);
 /*记录控制面板*/
 void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page);
+/*用户记录状态打印*/
+void record_state_display(int x, int y, USER user, int ifadmin);
 
 #endif

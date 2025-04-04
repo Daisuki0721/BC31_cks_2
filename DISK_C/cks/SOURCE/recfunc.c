@@ -24,7 +24,9 @@ int CreateRec(USER temp, int place, int maxlen)
 	rec.place = place;
 	/*记录抓拍照片路径*/
 	temp.record_times++;		//记录加1
-	rec.record_time = temp.record_times;
+	temp.record_id++;		//记录编号加1
+	rec.record_time = temp.record_times;		//第几次违规
+	rec.id = temp.record_id;	//记录编号
 	rec.readif = 0;		//未读
 	rec.appeal_state = 0;	//未申诉
 	/*生成抓拍照片路径*/
@@ -56,15 +58,15 @@ int SaveRec(USER temp, Record rec, int maxlen)
 		delay(3000);
 		exit(1);
 	}
-	if(UpdataUser(temp) == -1)		//更新用户信息
-	{
-		fclose(fp);
-		DestroyRList(&RL);
-		return -1;
-	}
 	if(RL.length <= maxlen)			//最多储存maxlen条记录
 	{
 	    RListInsert(&RL, rec);		//将记录信息插入线性表
+		if(UpdataUser(temp) == -1)		//更新用户信息
+		{
+			fclose(fp);
+			DestroyRList(&RL);
+			return -1;
+		}
 	    fseek(fp, 0, SEEK_SET);
 	    rewind(fp);
 	    fwrite(&RL.length, sizeof(int), 1, fp);
@@ -243,6 +245,7 @@ void RListDelete(USER user, int i)
 	FILE * fp;
 	Record * p = NULL;
 	Record * q = NULL;
+	Record temp = {0};
 	ReadAllRec(user, &RL);
 	sprintf(path, "record\\%s.r", user.name);
 	if((i<0) || (i >= RL.length)) 	//i的位置不合法 
@@ -252,10 +255,13 @@ void RListDelete(USER user, int i)
 		getch();
 		exit(1);
 	}
+	temp = RL.elem[i];		//获取被删除元素
 	p = RL.elem+i;  			//p为被删除元素位置
 	q = RL.elem+RL.length-1;  	//表尾元素的位置
 	for(p++; p<=q; p++)  		//被删除元素之后的元素左移
 	{
+		(*p).id--;		//记录编号减1
+		(*p).record_time--;	//记录次数减1
 		*(p-1) = *p;
 	}
 	RL.length--;  		//表长减1
@@ -267,7 +273,11 @@ void RListDelete(USER user, int i)
 	}
 	else
 	{
-		user.record_times--;			//用户违停数减一
+		if(temp.appeal_state == 0 && temp.appeal_state == 1 && temp.appeal_state == 2 && temp.appeal_state == 4 &&temp.appeal_state == 6 && temp.appeal_state == 7)
+		{
+			user.record_times--;		//记录次数减1
+		}
+		user.record_id--;		//记录编号减1
 		if(UpdataUser(user) == -1)		//更新用户信息
 		{
 			fclose(fp);
@@ -280,7 +290,7 @@ void RListDelete(USER user, int i)
 		fwrite(RL.elem, sizeof(Record), RL.length, fp);
 		fclose(fp);
 		DestroyRList(&RL);			//销毁线性表
-		delay(500);
+		delay(50);
 		return;
 	}
 }
@@ -296,4 +306,64 @@ void DestroyRList(RecList * RL)
 	free(RL->elem);
 	RL->listsize=0;
 	RL->length=0;
+}
+
+/****************************
+ * 功能说明：用户记录状态统计
+ * 参数说明：用户结构体，记录状态结构体
+ * 返回值：无
+ * ****************************/
+void RecStateCount(USER user, RecState * recstate)
+{
+	RecList RL = {0};
+	int i;
+	ReadAllRec(user, &RL);			//获取所有记录到线性表
+	recstate->not_appeal = 0;		//未读记录数
+	recstate->confirmed = 0;	//已确认记录数
+	recstate->appealed = 0;		//申诉中记录数
+	recstate->appealed_success = 0;	//申诉成功记录数
+	recstate->appealed_fail = 0;	//申诉失败记录数
+	recstate->appealed_cancel = 0;	//撤销申诉记录数
+	for(i=0; i<RL.length; i++)
+	{
+		if(RL.elem[i].appeal_state == 0) recstate->not_appeal++;
+		if(RL.elem[i].appeal_state == 1 
+		&& RL.elem[i].appeal_state == 5
+		&& RL.elem[i].appeal_state == 6) recstate->confirmed++;
+		if(RL.elem[i].appeal_state == 2) recstate->appealed++;
+		if(RL.elem[i].appeal_state == 3) recstate->appealed_success++;
+		if(RL.elem[i].appeal_state == 4) recstate->appealed_fail++;
+		if(RL.elem[i].appeal_state == 7) recstate->appealed_cancel++;
+	}
+	DestroyRList(&RL);			//销毁线性表
+}
+
+/****************************
+ * 功能说明：记录线性表处理为申诉线性表
+ * 参数说明：用户结构体，记录线性表地址
+ * 返回值：	0: 没有记录 1: 有记录
+ * ****************************/
+int RecListToAppealList(USER user, RecList * RL)
+{
+	RecList RL_temp = {0};
+	int i, j = 0;
+	ReadAllRec(user, &RL_temp);			//获取所有记录到线性表
+	if(RL_temp.length == 0) 
+	{
+		RL->length = 0;
+		RL->listsize = RL_temp.listsize;
+		return 0;		//如果没有记录，直接返回
+	}
+	for(i=0; i<RL_temp.length; i++)
+	{
+		if(RL_temp.elem[i].appeal_state == 0 || RL_temp.elem[i].appeal_state == 2 || RL_temp.elem[i].appeal_state == 3 || RL_temp.elem[i].appeal_state == 4 || RL_temp.elem[i].appeal_state == 7)
+		{
+			RListInsert(RL, RL_temp.elem[i]);	//将记录信息插入线性表
+			j++;
+		}
+	}
+	RL->length = j;
+	RL->listsize = RL_temp.listsize;
+	DestroyRList(&RL_temp);			//销毁线性表
+	return 1;		//返回有记录
 }
