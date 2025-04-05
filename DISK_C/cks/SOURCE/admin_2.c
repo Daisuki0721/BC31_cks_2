@@ -21,6 +21,8 @@ void admin_record_panel_ctrl(int * sidepage, int * page)
 {
     static int current_sidepage = 1;
     int i = 0, flag = 0, num = 0, esc = 0;
+    int last_user_num = 0;
+    USER last_user = {0}, now_user = {0};	//上一个用户和当前用户
 
     while(1)
     {
@@ -34,8 +36,10 @@ void admin_record_panel_ctrl(int * sidepage, int * page)
         } 
         else
         {
-            highlight_switch_user(num, *sidepage);   //高亮按钮切换
-        }           
+            last_user_num = highlight_switch_user(num, *sidepage, &last_user, &now_user);   //高亮按钮切换
+            appeal_new_confirm(now_user, 155, 150+(num%7)*75+5);            //申诉红点(当前用户)
+            appeal_new_confirm(last_user, 155, 150+(last_user_num%7)*75+5);   //申诉红点(上一个用户)
+        } 
 
         while(1)
         {
@@ -66,6 +70,7 @@ void g_admin_record_panel(int sidepage)
     for(i=0, unum = pos; (unum < pos + 7) && (unum < UL.length); unum++, i++)       //控制翻页
     {
         rounded_button_asc(15, 150+i*75, 145, 60, UL.elem[unum].name, 5, 65498);
+        appeal_new_confirm(UL.elem[unum], 155, 150+i*75+5);   //申诉红点
     }
 	if(!(sidepage == 1))
 	{
@@ -93,8 +98,6 @@ void userinfo_display_short(int unum)
     
     mouse_off(&mouse);
 
-
-
     prt_hz16(200, 50, "用户信息", 63519, "hzk\\hzk16");
     prt_hz16(200+4*16, 76, "用户名：", 63519, "hzk\\hzk16");
     prt_asc16(330, 76, temp.name, 0);
@@ -113,6 +116,9 @@ void userinfo_display_short(int unum)
     prt_hz16(200+16, 154, "违停记录次数：", 63519, "hzk\\hzk16");
     itoa(temp.record_times, str, 10);
     prt_asc16(330, 154, str, 0);
+    prt_hz16(200+3*16, 180, "申诉次数：", 63519, "hzk\\hzk16");
+    itoa(temp.appeal_times, str, 10);
+    prt_asc16(330, 180, str, 0);
 }
 
 /*记录信息显示（32号字，用puthz函数）*/
@@ -123,7 +129,7 @@ void record_display_admin(int x, int y, Record rec)
     char * week[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
     area_read(AP);          //读取地点信息
 
-    bar1(x+10, y, x+10+800, y+400, 65533);   //绘制背景
+    bar1(x+10, y, x+10+800, y+180, 65533);   //绘制背景
     puthz(x+10, y, "记录信息", 32, 33, 0);
     puthz(x+10, y+10+34, "违停时间：", 32, 33, 0);
     puthz(x+10, y+10+2*34, "违停地点：", 32, 33, 0);
@@ -137,9 +143,13 @@ void record_display_admin(int x, int y, Record rec)
     {
         puthz(x+10+33*7, y+10+34*3, "未读", 32, 33, 0);
     }
-    else
+    else if(rec.readif == 1)
     {
         puthz(x+10+33*7, y+10+34*3, "已读", 32, 33, 0);
+    }
+    else if(rec.readif == 2)
+    {
+        puthz(x+10+33*7, y+10+34*3, "更新", 32, 33, 0);
     }
     if(rec.appeal_state == 0)
     {
@@ -178,8 +188,8 @@ void record_display_admin(int x, int y, Record rec)
 /*记录控制面板*/
 void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
 {
-    int pos, rnum, rnum_select, i, j, k, rlistlen;
-    int  flag = 0, flag2 = 0, esc = 0;
+    int pos, rnum, i, j, k, rlistlen;
+    int  flag = 0, flag2 = 0, esc = 0, rnum_select = -1;
     char str[3];
 	USER user = {0};
 	Record temp = {0};
@@ -246,12 +256,38 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                     flag = 0;
                     continue;
                 }
-                if(mouse_in(x+250, y+200, x+250+80, y+200+30))  //如果点击删除
+
+                if(mouse_in(x+135, y+200, x+135+110, y+200+30))     //处理用户申诉菜单
                 {
                     mouse_trans(HAND);
-                    if(mouse_press(x+250, y+200, x+250+80, y+200+30))
+                    if(mouse_press(x+135, y+200, x+135+110, y+200+30))
                     {
-                        if(temp.record_time == 0)   //如果没有选择记录
+                        if(temp.id == 0)   //如果没有选择记录
+                        {
+                            bar1(x+8, y+158, x+452, y+158+30, 65530);
+                            puthz(x+8, y+164, "请先选择记录！", 16, 17, 0);
+                            delay(2000);
+                            bar1(x+8, y+158, x+452, y+158+30, 65530);
+                        }
+                        else
+                        {
+                            temp = RL.elem[rnum_select];   //获取当前记录
+                            esc = appeal_deal_list(x+135, y+243, &user, rnum_select);   //处理申诉
+                            if(esc)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+                if(mouse_in(x+260, y+200, x+260+80, y+200+30))  //如果点击删除
+                {
+                    mouse_trans(HAND);
+                    if(mouse_press(x+260, y+200, x+260+80, y+200+30))
+                    {
+                        if(temp.id == 0)   //如果没有选择记录
                         {
                             bar1(x+8, y+158, x+452, y+158+30, 65530);
                             puthz(x+8, y+164, "请先选择记录！", 16, 17, 0);
@@ -275,10 +311,11 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
                     }
                     continue;
                 }
-                if(mouse_in(x+350, y+200, x+350+80, y+200+30))  //如果点击刷新
+
+                if(mouse_in(x+360, y+200, x+360+80, y+200+30))  //如果点击刷新
                 {
                     mouse_trans(HAND);
-                    if(mouse_press(x+350, y+200, x+350+80, y+200+30))
+                    if(mouse_press(x+360, y+200, x+360+80, y+200+30))
                     {
                         if(temp.record_time == 0)   //如果没有选择记录
                         {
@@ -298,10 +335,10 @@ void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page)
 
 
             
-            if(mouse_in(x+50, y+200, x+50+150, y+200+30))  //如果点击返回主页
+            if(mouse_in(x+10, y+200, x+10+110, y+200+30))  //如果点击返回主页
             {
                 mouse_trans(HAND);
-                if(mouse_press(x+50, y+200, x+50+80, y+200+30))
+                if(mouse_press(x+10, y+200, x+10+110, y+200+30))
                 {
                     *page = 0;
                     esc = 1;
@@ -427,3 +464,128 @@ void record_state_display(int x, int y, USER user, int ifadmin)
     put_asc16_size(x +10 +33*8,y +10 +34*6 ,2 ,2 ,str ,0 );
 }
 
+/*绘制用户申诉红点*/
+void appeal_new_confirm(USER user, int x, int y)
+{
+    int i;
+    char temp[3] = {0};
+
+    if(user.appeal_times <= 0)   //如果没有申诉
+    {
+        return;       //直接返回  
+    }
+
+    if(user.appeal_times < 10)
+    {
+        Circlefill(x, y, 10, 63488);
+        sprintf(temp, "%d", user.appeal_times);
+        prt_asc16(x-3, y-8, temp, 65535);
+    }
+    else if(user.appeal_times >= 10)
+    {
+        Circlefill(x, y, 10, 63488);
+        sprintf(temp, "%d", user.appeal_times);
+        prt_asc16(x-8, y-8, temp, 65535);
+    }
+}
+
+/*用户申诉处理下拉菜单（0为未成功处理，1为成功处理）*/
+int appeal_deal_list(int x, int y, USER * user, int rec_num)
+{
+    int buffer_id;
+    Record rec = {0};
+    RecList RL = {NULL, 0, 0};          //记录线性表
+    ReadAllRec(*user, &RL);   //获取所有记录
+    rec = RL.elem[rec_num];   //获取当前记录
+    DestroyRList(&RL);        //销毁线性表
+
+    mouse_off(&mouse);
+    mouse_trans(CURSOR);
+    delay(100);
+
+    buffer_id = SaveMenuBuffer(x-1, y-1, x+140+1, y+175+1);
+
+    bar1(x, y, x+140, y+175, 33808);   //绘制背景
+    bar1(x+5, y+5, x+135, y+170, 65530);   
+
+    puthz(x+7, y+7, "申诉处理", 24, 25, 0);   //绘制标题
+    if(rec.appeal_state == 2)
+    {
+        rounded_button_d(x+15, y+35, 110, 30, "申诉成功", 3, 65498);   //申诉成功
+        rounded_button_d(x+15, y+75, 110, 30, "申诉失败", 3, 65498);   //申诉失败
+    }
+    else
+    {
+        rounded_button_d(x+15, y+35, 110, 30, "申诉成功", 3, 33808);   //申诉成功
+        rounded_button_d(x+15, y+75, 110, 30, "申诉失败", 3, 33808);   //申诉失败
+    }
+    
+    mouse_on(mouse);
+
+    while(1)
+    {
+        sys_time(200, 20);
+        mouse_show(&mouse);
+        
+        if(mouse_in(x+15, y+35, x+15+110, y+35+30))
+        {
+            mouse_trans(HAND);
+            if(mouse_press(x+15, y+35, x+15+110, y+35+30))
+            {
+                if(rec.appeal_state == 2)   //如果是申诉中
+                {
+                    rec.appeal_state = 3;   //申诉成功
+                    rec.readif = 2;        //更新
+                    UpdataRec(*user, rec, rec_num);   //更新记录
+                    (*user).appeal_times--;   //减少申诉次数
+                    UpdataUser(*user);      //更新用户信息
+                    bar1(x+15, y+115, x+15+110, y+115+16, 65530);
+                    puthz(x+15, y+115, "该用户申诉成功！", 16, 16, 0);
+                    delay(2000);
+                    return 1;
+                }
+                else
+                {
+                    bar1(x+15, y+115, x+15+110, y+115+16, 65530);
+                    puthz(x+15, y+115, "该用户未申诉！", 16, 16, 63488);
+                }
+            }
+            continue;
+        }
+
+        if(mouse_in(x+15, y+75, x+15+110, y+75+30))
+        {
+            mouse_trans(HAND);
+            if(mouse_press(x+15, y+75, x+15+110, y+75+30))
+            {
+                if(rec.appeal_state == 2)   //如果是申诉中
+                {
+                    rec.appeal_state = 4;   //申诉失败
+                    rec.readif = 2;        //更新
+                    UpdataRec(*user, rec, rec_num);   //更新记录
+                    bar1(x+15, y+115, x+15+110, y+115+16, 65530);
+                    puthz(x+15, y+115, "该用户申诉失败！", 16, 16, 0);
+                    delay(2000);
+                    return 1;
+                }
+                else
+                {
+                    bar1(x+15, y+115, x+15+110, y+115+16, 65530);
+                    puthz(x+15, y+115, "该用户未申诉！", 16, 16, 63488);
+                }
+            }
+            continue;
+        }
+
+        if(mouse_press(0, 0, 1024, 768) && !mouse_in(x, y, x+140, y+175))   //如果点击菜单外，则退出
+        {
+            mouse_off(&mouse);
+            RestoreMenuBuffer(x-1, y-1, x+140+1, y+175+1, buffer_id);   //恢复菜单
+            mouse_on(mouse);
+            ClearMenuBuffer();   //清除菜单缓存
+            return 0;
+        }
+        mouse_trans(CURSOR);
+        delay(15);
+    }
+}

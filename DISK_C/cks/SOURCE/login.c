@@ -105,7 +105,7 @@ void user_login(int * func,int * unum)
 /*新用户注册*/
 void rigister_login(int * func,int * unum)
 {
-	struct USER temp={"\0", "\0", 0, 0, "\0", "\0", "\0", 0, 0, 0};	//存储信息的用户结构体 
+	struct USER temp={"\0", "\0", 0, 0, "\0", "\0", "\0", 0, 0, 0, 0};	//存储信息的用户结构体 
 	UserList UL={0};		//初始化用户线性表
 	char judge[LEN]="\0";				//用于判断的密码 
 

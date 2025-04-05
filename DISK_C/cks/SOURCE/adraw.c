@@ -217,12 +217,15 @@ void record_select_draw(int x, int y, int num)
 	USER temp = {0};
 	Record record = {0};
 	UserList UL = {NULL, 0, 0};          //用户线性表
+	RecList RL = {NULL, 0, 0};          //记录线性表
 	InitUList(&UL);           //创建线性表
 	ReadAllUser(&UL);         //获取所有用户
 	temp = UL.elem[num];
 	DestroyUList(&UL);        //销毁线性表
 
-	reclistlen = ReadRecNum(temp);	//获取记录长度
+	ReadAllRec(temp, &RL);       //获取所有记录
+
+	reclistlen = RL.length;	//获取记录长度
 
 	bar1(x, y, x+460, y+240, 33808);
 	bar1(x+5, y+5, x+455, y+235, 65530);
@@ -231,24 +234,41 @@ void record_select_draw(int x, int y, int num)
 		j = (rnum % 12) % 4;
 		i = (rnum % 12) / 4;
 		
-		sprintf(str, "record%d", rnum+1);
-		rounded_button_asc(x+8+i*150, y+10+j*37, 144, 30, str, 3, 59391);
+		sprintf(str, "record%d", RL.elem[rnum].id);
+		if(RL.elem[rnum].appeal_state == 2)		//如果正在申诉中
+		{
+			rounded_button_asc(x+8+i*150, y+10+j*37, 144, 30, str, 3, 65504);
+		}
+		else if(RL.elem[rnum].appeal_state == 3)	//如果申诉成功
+		{
+			rounded_button_asc(x+8+i*150, y+10+j*37, 144, 30, str, 3, 2016);
+		}
+		else if(RL.elem[rnum].appeal_state == 4)	//如果申诉失败
+		{
+			rounded_button_asc(x+8+i*150, y+10+j*37, 144, 30, str, 3, 63488);
+		}
+		else
+		{
+			rounded_button_asc(x+8+i*150, y+10+j*37, 144, 30, str, 3, 65530);
+		}
 	}
 
-	rounded_button_d(x+50, y+200, 150, 30, "返回主页", 3, 65498);
+	rounded_button_d(x+10, y+200, 110, 30, "返回主页", 3, 65498);
 	if(reclistlen > 0)
 	{
-		rounded_button_d(x+250, y+200, 80, 30, "删除", 3, 65498);
-		rounded_button_d(x+350, y+200, 80, 30, "刷新", 3, 65498);
+		rounded_button_d(x+260, y+200, 80, 30, "删除", 3, 65498);
+		rounded_button_d(x+360, y+200, 80, 30, "刷新", 3, 65498);
+		rounded_button_d(x+135, y+200, 110, 30, "处理菜单", 3, 65498);
 	}
 	puthz(x+8, y+244, "请不要随意删除记录！", 24, 25, 63488);
 }
 
-/*高亮按钮切换函数(用户)*/
-void highlight_switch_user(int unum, int sidepage)
+/*高亮按钮切换函数(用户)，通过指针返回两个用户, 返回值为上一个用户*/
+int highlight_switch_user(int unum, int sidepage, USER * last_user, USER * now_user)
 {
     static int last = 0;    //上一次点击的按钮
     static int lastsidepage = 1;    //上一次的页面
+	int last_record = last;	//上一个记录
     UserList UL = {NULL, 0, 0};          //用户线性表
     InitUList(&UL);           //创建线性表
     ReadAllUser(&UL);         //获取所有用户
@@ -258,7 +278,8 @@ void highlight_switch_user(int unum, int sidepage)
     if(lastsidepage == sidepage)        //如果不换页，重绘深色按钮
     {
         rounded_button_asc(15, 150+(last%7)*75, 145, 60, UL.elem[last].name, 5, 65498);
-    }
+		*last_user = UL.elem[last];	//返回上一个用户
+	}
     else
     {
         lastsidepage = sidepage;
@@ -268,11 +289,14 @@ void highlight_switch_user(int unum, int sidepage)
 	if(lastsidepage)
 	{
 		rounded_button_asc(15, 150+(unum%7)*75, 145, 60, UL.elem[unum].name, 5, 65504);
+		*now_user = UL.elem[unum];	//返回当前用户
 	}
     
 	mouse_on(mouse);
 
     DestroyUList(&UL);        //销毁线性表
+
+	return last_record;	//返回上一个记录
 }
 
 /*高亮按钮切换函数（地点）*/
@@ -372,9 +396,13 @@ void highlight_switch_mail(USER user, int rnum, int sidepage)
 			{
 				puthz(126, 150+(last%7)*75+2, "未读", 16, 16, 63488);
 			}
-			else
+			else if(RL.elem[last].readif == 1)
 			{
 				puthz(126, 150+(last%7)*75+2, "已读", 16, 16, 33808);
+			}
+			else if(RL.elem[last].readif == 2)
+			{
+				puthz(126, 150+(last%7)*75+2, "更新", 16, 16, 63488);
 			}
 		}
 		else
@@ -391,9 +419,13 @@ void highlight_switch_mail(USER user, int rnum, int sidepage)
 			{
 				puthz(126, 150+(rnum%7)*75+2, "未读", 16, 16, 63488);
 			}
-			else
+			else if(RL.elem[rnum].readif == 1)
 			{
 				puthz(126, 150+(rnum%7)*75+2, "已读", 16, 16, 33808);
+			}
+			else if(RL.elem[rnum].readif == 2)
+			{
+				puthz(126, 150+(rnum%7)*75+2, "更新", 16, 16, 63488);
 			}
 		}
 		
@@ -570,6 +602,7 @@ void sys_time(int x, int y)
     }
 }
 
+/*多行文字输出（32号字，行距为2，最大输入行数为18行）*/
 void puthz_lines(int x, int y, char * str1, char * str2, char * str3, char * str4, char * str5, char * str6, char * str7, char * str8,
 	char * str9, char * str10, char * str11, char * str12, char * str13, char * str14, char * str15, char * str16, char * str17, char * str18)
 {

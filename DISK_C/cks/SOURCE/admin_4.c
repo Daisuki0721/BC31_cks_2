@@ -656,6 +656,7 @@ int week_list(int x1, int y1, int x2, int y2)
                         put_week(x2+4, y2+4, j+i*2+1, 24, 0);
                         RestoreMenuBuffer(x1-1, y1-1, x1+282+1, y1+210+1, buffer_id);   //»Ö¸´²Ëµ¥
                         mouse_on(mouse);
+                        ClearMenuBuffer();   //Çå³ý²Ëµ¥»º´æ
                         return j+i*2+1;   //·µ»ØÐÇÆÚ
                     }
                     break;
@@ -673,6 +674,7 @@ int week_list(int x1, int y1, int x2, int y2)
             mouse_off(&mouse);
             RestoreMenuBuffer(x1-1, y1-1, x1+282+1, y1+210+1, buffer_id);   //»Ö¸´²Ëµ¥
             mouse_on(mouse);
+            ClearMenuBuffer();   //Çå³ý²Ëµ¥»º´æ
             return 0;
         }
         mouse_trans(CURSOR);

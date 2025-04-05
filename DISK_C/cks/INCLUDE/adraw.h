@@ -39,8 +39,8 @@ void red_tick(int x, int y);
 void user_select_draw(int x,int y, int sidepage);
 /*选择记录面板绘制*/
 void record_select_draw(int x, int y, int num);
-/*高亮按钮切换函数（用户）*/
-void highlight_switch_user(int unum, int sidepage);
+/*高亮按钮切换函数(用户)，通过指针返回两个用户, 返回值为上一个用户*/
+int highlight_switch_user(int unum, int sidepage, USER * last_user, USER * now_user);
 /*高亮按钮切换函数（地点）*/
 void highlight_switch_area(int i, int sidepage);
 /*高亮按钮切换函数(记录)*/

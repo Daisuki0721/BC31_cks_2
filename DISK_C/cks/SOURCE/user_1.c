@@ -97,7 +97,10 @@ void record_info_display_ctrl(USER user, int * rnum, int * sidepage, int * page)
     delay(100);
 
     clear_window(MAINBOARD);
-    record_display_user(200, 50, user, *rnum);   //打印记录内容
+    if(user.record_id > 0)
+    {
+        record_display_user(200, 50, user, *rnum);   //打印记录内容
+    }
     rounded_button_d(500, 10, 220, 35, "查看记录状态统计", 5, 34429);
 
     mouse_on(mouse);
@@ -240,9 +243,13 @@ void record_display_user(int x, int y, USER user, int rnum)
     {
         puthz(x+10+33*7, y+10+34*4, "未读", 32, 33, 0);
     }
-    else
+    else if(rec.readif == 1)
     {
         puthz(x+10+33*7, y+10+34*4, "已读", 32, 33, 0);
+    }
+    else if(rec.readif == 2)
+    {
+        puthz(x+10+33*7, y+10+34*4, "更新", 32, 33, 0);
     }
     if(rec.appeal_state == 0)
     {
@@ -284,10 +291,10 @@ void RecState_list(int x, int y, USER user)
     int buffer_id;
     mouse_off(&mouse);
 
-    buffer_id = SaveMenuBuffer(x-1, y-1, x+470+1, y+260+1);
+    buffer_id = SaveMenuBuffer(x-1, y-1, x+470+1, y+280+1);
 
-    bar1(x, y, x+470, y+260, 33808);
-    bar1(x+5, y+5, x+465, y+255, 65530);
+    bar1(x, y, x+470, y+280, 33808);
+    bar1(x+5, y+5, x+465, y+275, 65530);
             
     record_state_display(x+5, y+15, user, 0);   //显示记录状态
 
@@ -298,12 +305,13 @@ void RecState_list(int x, int y, USER user)
         sys_time(200, 20);
         mouse_show(&mouse);
 
-        if(mouse_press(0, 0, 1024, 768))   //如果点击菜单外，则退出
+        if(mouse_press(0, 0, 1024, 768))   //如果再次点击，则退出
         {
             mouse_off(&mouse);
-            RestoreMenuBuffer(x-1, y-1, x+470+1, y+260+1, buffer_id);   //恢复菜单
+            RestoreMenuBuffer(x-1, y-1, x+470+1, y+280+1, buffer_id);   //恢复菜单
             mouse_on(mouse);
-            break;
+            ClearMenuBuffer();   //清除菜单缓存
+            return;
         }
 
         mouse_trans(CURSOR);

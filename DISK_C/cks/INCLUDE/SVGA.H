@@ -111,5 +111,8 @@ int SaveMenuBuffer(int x1, int y1, int x2, int y2);
 /*** Restore dropdown menu from temp file and delete it ***/
 void RestoreMenuBuffer(int x1, int y1, int x2, int y2, int buffer_id);
 
+/*** Clear dropdown menu buffer directory ***/
+void ClearMenuBuffer(void);
+
 #endif
 

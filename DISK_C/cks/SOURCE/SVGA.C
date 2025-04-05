@@ -1203,3 +1203,32 @@ void RestoreMenuBuffer(int x1, int y1, int x2, int y2, int buffer_id)
     // Delete the temporary file
     remove(filename);
 }
+
+/**********************************************************
+ * Function:       ClearMenuBuffer
+ * 	
+ * Description:    Clears the menu buffer by deleting all temp BMP files
+ * 	
+ * Calls:
+ * 	
+ * Called By:      Dropdown menu functions
+ * 	
+ * Input:          None
+ * 	
+ * Output:         Deletes all temp BMP files in "list_tmp" folder
+ * 	
+ * Return:         None
+ * 	
+ * **********************************************************/
+void ClearMenuBuffer(void)
+{
+	char filename[50];
+	int i;
+	
+	// Delete all temp BMP files
+	for(i = 1; i <= 10; i++) 
+	{
+		sprintf(filename, "list_tmp\\buf_%d.bmp", i);
+		remove(filename);
+	}
+}

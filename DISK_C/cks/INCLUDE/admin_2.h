@@ -13,5 +13,9 @@ void userinfo_display_short(int unum);
 void record_select_ctrl(int x, int y, int * num, int * sidepage, int * page);
 /*用户记录状态打印*/
 void record_state_display(int x, int y, USER user, int ifadmin);
+/*绘制用户申诉红点*/
+void appeal_new_confirm(USER user, int x, int y);
+/*用户申诉处理下拉菜单（0为未成功处理，1为成功处理）*/
+int appeal_deal_list(int x, int y, USER * user, int rnum);
 
 #endif

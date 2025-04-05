@@ -36,7 +36,7 @@ void user_mail_panel_ctrl(int * page, int * sidepage, USER user)
         rec = RL.elem[rnum];
         DestroyRList(&RL);       
     
-        if(rec.readif == 0)       //如果未读，设置为已读
+        if(rec.readif != 1)       //如果不为已读，设置为已读
         {
             rec.readif = 1;
             UpdataRec(user, rec, rnum);	//更新记录
@@ -88,9 +88,13 @@ void g_user_mail_panel(int sidepage, USER user)
         {
             puthz(126, 150+i*75+2, "未读", 16, 16, 63488);
         }
-        else
+        else if(RL.elem[rnum].readif == 1)
         {
             puthz(126, 150+i*75+2, "已读", 16, 16, 33808);
+        }
+        else if(RL.elem[rnum].readif == 2)
+        {
+            puthz(126, 150+i*75+2, "更新", 16, 16, 33808);
         }
     }
 	if(!(sidepage == 1))
@@ -118,7 +122,10 @@ void mail_info_display_ctrl(USER user, int * rec, int * sidepage, int * page)
 
     clear_window(MAINBOARD);
     mail_print(200, 50, user, *rec+1);   //打印邮件内容
-    rounded_button_d(800, 600, 145, 45, "查看抓拍", 5, 65498);    //查看抓拍按钮
+    if(user.record_id > 0)
+    {
+        rounded_button_d(800, 600, 145, 45, "查看抓拍", 5, 65498);    //查看抓拍按钮
+    }
 
     mouse_on(mouse);
 

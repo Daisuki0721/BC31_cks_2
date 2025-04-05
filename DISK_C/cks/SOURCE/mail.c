@@ -3,28 +3,33 @@
 /*打印邮件内容（0为没有邮件）*/
 void mail_print(int x, int y, USER user, int i) 
 {
+    int rec_num = 0;        //记录数
     char time[40] = {0}, temp[10] = {0};
     char * week[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
     RecList RL = {0};
     Record rec = {0};
     AREA AP[14] = {0};
-    FILE * fp = {0};
     
     ReadAllRec(user, &RL);
-    rec = RL.elem[i-1];
+    rec_num = RL.length;
+    if(rec_num)     //如果有记录
+    {
+        rec = RL.elem[i-1];
+    }
     DestroyRList(&RL);
 
     area_read(AP);          //读取地点信息
 
     sprintf(time, "record\\%s.r", user.name);
 
-    if(i == 0) {
+    if(rec_num == 0) 
+    {
         puthz(x, y, "当前没有邮件", 24, 25, 0);
         return;
     }
     if(user.ifin == 0)
     {
-        if(i == 1)
+        if(rec.record_time == 1)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -52,7 +57,7 @@ void mail_print(int x, int y, USER user, int i)
             puthz(x+33*5, y+34*16, "警告", 32, 33, 63488);
             
         }
-        else if(i == 2)
+        else if(rec.record_time ==  2)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -79,7 +84,7 @@ void mail_print(int x, int y, USER user, int i)
                                     "　　　　　　　　　　　　　　　华中科技大学保卫部");
             puthz(x+33*5, y+34*16, "车辆一天内禁止入校", 32, 33, 63488);
         }
-        else if(i == 3)
+        else if(rec.record_time ==  3)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -106,7 +111,7 @@ void mail_print(int x, int y, USER user, int i)
                                     "　　　　　　　　　　　　　　　华中科技大学保卫部");
             puthz(x+33*5, y+34*16, "车辆三天内禁止入校", 32, 33, 63488);
         }
-        else if(i == 4)
+        else if(rec.record_time ==  4)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -133,7 +138,7 @@ void mail_print(int x, int y, USER user, int i)
                                     "　　　　　　　　　　　　　　　华中科技大学保卫部");
             puthz(x+33*5, y+34*16, "车辆一周内禁止入校", 32, 33, 63488);
         }
-        else if(i == 5)
+        else if(rec.record_time ==  5)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -161,7 +166,7 @@ void mail_print(int x, int y, USER user, int i)
         
             puthz(x+33*5, y+34*16, "车辆一个月内禁止入校", 32, 33, 63488);
         }
-        else if(i >= 6)
+        else if(rec.record_time >= 6)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -191,7 +196,7 @@ void mail_print(int x, int y, USER user, int i)
     }
     else if(user.ifin == 1)
     {
-        if(i == 1)
+        if(rec.record_time ==  1)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -219,7 +224,7 @@ void mail_print(int x, int y, USER user, int i)
             puthz(x+33*5, y+34*16, "警告", 32, 33, 63488);
             
         }
-        else if(i == 2)
+        else if(rec.record_time ==  2)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -246,7 +251,7 @@ void mail_print(int x, int y, USER user, int i)
                                     "　　　　　　　　　　　　　　　华中科技大学保卫部");
             puthz(x+33*5, y+34*16, "车辆一天内禁止入校", 32, 33, 63488);
         }
-        else if(i == 3)
+        else if(rec.record_time ==  3)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -273,7 +278,7 @@ void mail_print(int x, int y, USER user, int i)
                                     "　　　　　　　　　　　　　　　华中科技大学保卫部");
             puthz(x+33*5, y+34*16, "车辆三天内禁止入校", 32, 33, 63488);
         }
-        else if(i == 4)
+        else if(rec.record_time ==  4)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -300,7 +305,7 @@ void mail_print(int x, int y, USER user, int i)
                                     "　　　　　　　　　　　　　　　华中科技大学保卫部");
             puthz(x+33*5, y+34*16, "车辆一周内禁止入校", 32, 33, 63488);
         }
-        else if(i == 5)
+        else if(rec.record_time ==  5)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -328,7 +333,7 @@ void mail_print(int x, int y, USER user, int i)
         
             puthz(x+33*5, y+34*16, "车辆一个月内禁止入校", 32, 33, 63488);
         }
-        else if(i >= 6)
+        else if(rec.record_time >= 6)
         {
             mail_format_time(rec, time);
             put_asc16_size(x, y, 2, 2, time, 0);
@@ -361,19 +366,26 @@ void mail_print(int x, int y, USER user, int i)
         rec.year, rec.month, rec.day, week[rec.week], rec.hour, rec.minute, rec.second);
     put_asc16_size(x+33*5, y+34*14, 2, 2, time, 0);
     puthz(x+33*5, y+34*15, AP[rec.place].name, 32, 33, 0);
-    if(rec.appeal_state == 0)
+    if(rec.appeal_state == 0 
+        || rec.appeal_state == 7)
     {
         puthz(x+33*5, y+34*17, "未申诉", 32, 33, 0);
     }
-    else if(rec.appeal_state == 1)
+    else if(rec.appeal_state == 1 
+        || rec.appeal_state == 5 
+        || rec.appeal_state == 6)
     {
-        puthz(x+33*5, y+34*17, "申诉中", 32, 33, 0);
+        puthz(x+33*5, y+34*17, "已确认", 32, 33, 0);
     }
     else if(rec.appeal_state == 2)
     {
-        puthz(x+33*5, y+34*17, "申诉成功", 32, 33, 0);
+        puthz(x+33*5, y+34*17, "申诉中", 32, 33, 0);
     }
     else if(rec.appeal_state == 3)
+    {
+        puthz(x+33*5, y+34*17, "申诉成功", 32, 33, 0);
+    }
+    else if(rec.appeal_state == 4)
     {
         puthz(x+33*5, y+34*17, "申诉失败", 32, 33, 0);
     }

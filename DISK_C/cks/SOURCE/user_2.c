@@ -38,7 +38,7 @@ void user_record_dispose_ctrl(int * page, int * sidepage, USER user)
         {
             mouse_show(&mouse);
 
-            appeal_info_display_ctrl(user, &pnum, sidepage, page, &rnum);  //记录信息显示/控制
+            appeal_info_display_ctrl(user, &pnum, &rnum, sidepage, page);  //记录信息显示/控制
             break;
         }
         if(!*page)     //如果选择退出，跳出循环
@@ -99,7 +99,7 @@ void g_user_dispose_panel(int sidepage, USER user)
 }
 
 /*用户记录信息显示控制函数*/
-void appeal_info_display_ctrl(USER user, int * pnum, int * sidepage, int * page, int * rnum)
+void appeal_info_display_ctrl(USER user, int * pnum, int * rnum, int * sidepage, int * page)
 {
     int i, k;
     int esc = 0, flag = 0, pos = 0, button1 = 0, button2 = 0;
@@ -110,7 +110,10 @@ void appeal_info_display_ctrl(USER user, int * pnum, int * sidepage, int * page,
     delay(100);
 
     clear_window(MAINBOARD);
-    appeal_display_user(200, 50, user, *pnum);   //打印记录内容
+    if(user.appeal_times > 0)
+    {
+        appeal_display_user(200, 50, user, *pnum);   //打印记录内容
+    }
 
     RecListToAppealList(user, &APL);         //获取所有申诉记录
 
@@ -150,7 +153,6 @@ void appeal_info_display_ctrl(USER user, int * pnum, int * sidepage, int * page,
         {
             puthz(15, 150+2, "当前没有需要", 24, 25, 0);
             puthz(15, 150+2+24, "处理的记录！", 24, 25, 0);
-            clear_window(MAINBOARD);
         }
         while(1)
         {
@@ -165,8 +167,8 @@ void appeal_info_display_ctrl(USER user, int * pnum, int * sidepage, int * page,
                     flag = 1;
                     if(mouse_press(15, 150+k*75, 160, 210+k*75))
                     {
-                        *pnum = k + (*sidepage-1)*7;      
-                        *rnum = APL.elem[*pnum].id - 1;     //申诉在线性表中的位置编号
+                        *pnum = k + (*sidepage-1)*7;      //当前点击按钮的位置，同时也是申诉编号
+                        *rnum = APL.elem[*pnum].id - 1;     //申诉在原记录线性表中的位置编号
                         esc = 1;
                         delay(200);
                         break;
@@ -206,20 +208,18 @@ void appeal_info_display_ctrl(USER user, int * pnum, int * sidepage, int * page,
                         if(APL.elem[*pnum].appeal_state == 0 
                             && APL.elem[*pnum].appeal_state == 7)   //未申诉或申诉撤销
                         {
-                            APL.elem[*pnum].appeal_state = 1;   //已确认
-                            UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1);  
+                            APL.elem[*pnum].appeal_state = 1;   //已确认  
                         }
                         else if(APL.elem[*pnum].appeal_state = 3)  //申诉成功
                         {
-                            APL.elem[*pnum].appeal_state = 5;   //申诉成功已确认
-                            UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1);   
+                            APL.elem[*pnum].appeal_state = 5;   //申诉成功已确认   
                         }
                         else if(APL.elem[*pnum].appeal_state == 4)  //申诉失败
                         {
-                            APL.elem[*pnum].appeal_state = 6;   //申诉失败已确认
-                            UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1);   
+                            APL.elem[*pnum].appeal_state = 6;   //申诉失败已确认  
                         }
-                        puthz(700, 200, "已确认！即将返回上级", 32, 33, 0);
+                        UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1); 
+                        puthz(800, 172, "已确认！即将返回上级", 24, 25, 0);
                         delay(2000);
                         *pnum = 0;   //重新选择申诉
                         esc = 1;
@@ -240,18 +240,26 @@ void appeal_info_display_ctrl(USER user, int * pnum, int * sidepage, int * page,
                         if(APL.elem[*pnum].appeal_state == 0)   //未申诉
                         {
                             APL.elem[*pnum].appeal_state = 2;   //申诉中
-                            UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1);   
+                            user.appeal_times++;   //申诉次数加1
+                            puthz(800, 172, "已申诉！", 24, 25, 0);
+                            delay(2000);
                         }
                         else if(APL.elem[*pnum].appeal_state == 2)  //申诉中
                         {
-                            APL.elem[*pnum].appeal_state = 7;   //撤销申诉
-                            UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1);   
+                            APL.elem[*pnum].appeal_state = 7;   //撤销申诉  
+                            user.appeal_times--;   //申诉次数减1
+                            puthz(800, 172, "已撤销申诉！", 24, 25, 0);
+                            delay(2000);
                         }
                         else if(APL.elem[*pnum].appeal_state == 7)  //撤销申诉
                         {
-                            APL.elem[*pnum].appeal_state = 2;   //重新申诉
-                            UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1);   
+                            APL.elem[*pnum].appeal_state = 2;   //重新申诉  
+                            user.appeal_times++;   //申诉次数加1
+                            puthz(800, 172, "已重新申诉！", 24, 25, 0);
+                            delay(2000);
                         }
+                        UpdataRec(user, APL.elem[*pnum], APL.elem[*pnum].id-1); 
+                        UpdataUser(user);   //更新用户信息
                         esc = 1;
                         delay(200);
                         break;
@@ -346,9 +354,13 @@ void appeal_display_user(int x, int y, USER user, int rnum)
     {
         puthz(x+10+33*7, y+10+34*4, "未读", 32, 33, 0);
     }
-    else
+    else if(appeal.readif == 1)
     {
         puthz(x+10+33*7, y+10+34*4, "已读", 32, 33, 0);
+    }
+    else if(appeal.readif == 2)
+    {
+        puthz(x+10+33*7, y+10+34*4, "更新", 32, 33, 0);
     }
     if(appeal.appeal_state == 0)
     {

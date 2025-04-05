@@ -5,12 +5,15 @@ void user_interface(int unum, int * func)
 {
     int page=0;
 
-    struct USER user = {"\0", "\0", 0, 0, "\0", "\0", "\0", 0, 0, 0};	//用户
+    struct USER user = {"\0", "\0", 0, 0, "\0", "\0", "\0", 0, 0, 0, 0};	//用户
 	UserList UL = {NULL, 0, 0};          //线性表
 	InitUList(&UL);           //创建线性表
 	ReadAllUser(&UL);         //获取所有用户  
 	user = UL.elem[unum];       //得到当前用户
 	DestroyUList(&UL);        //销毁线性表
+
+    RecListRecordFix(user);     //修正用户申诉记录
+    RecListAppealFix(user);     //修正用户违停记录
 
     mouse_off(&mouse);
     mouse_trans(CURSOR);

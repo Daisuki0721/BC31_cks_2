@@ -13,5 +13,9 @@ void g_admin_interface(void);
 void g_admin_main_panel(void);
 /*管理退出动画界面*/
 void g_admin_exit_video(void);
+/*所有用户申诉记录修正*/
+void admin_appeal_rec_fix(void);
+/*绘制所有用户统计申诉红点*/
+void appeal_all_confirm(int x, int y);
 
 #endif

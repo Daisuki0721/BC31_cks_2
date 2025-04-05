@@ -21,6 +21,7 @@ void admin_user_panel_ctrl(int * sidepage, int * page)
 {
     static int current_sidepage = 1;
     int unum = 0;
+    USER last_user = {0}, now_user = {0};   //上一个用户和当前用户
 
     while(1)
     {
@@ -33,7 +34,7 @@ void admin_user_panel_ctrl(int * sidepage, int * page)
         }
         else
         {
-            highlight_switch_user(unum, *sidepage);   //高亮按钮切换
+            highlight_switch_user(unum, *sidepage, &last_user, &now_user);   //高亮按钮切换
         }
         while(1)
         {
@@ -207,7 +208,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                 continue;
             }
 
-            if(mouse_in(215+32*8, 591, 215+32*8+20, 591+20))
+            if(mouse_in(215+32*8, 591, 215+32*8+20, 591+20))    //更改是否为校内人员
             {
                 mouse_trans(HAND);
                 if(mouse_press(215+32*8, 591, 215+32*8+20, 591+20))
@@ -247,6 +248,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                 }
                 continue;
             }
+
             if(mouse_in(550, 700, 550+140, 700+40))     //初始化密码
             {
                 mouse_trans(HAND);
@@ -444,7 +446,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                 continue;
             }
 
-            if(mouse_in(850, 700, 850+140, 700+40))
+            if(mouse_in(850, 700, 850+140, 700+40))     //删除用户
             {
                 mouse_trans(HAND);
                 if(mouse_press(850, 700, 850+140, 700+40))
@@ -463,15 +465,25 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                             mouse_trans(HAND);
                             if(mouse_press(220+32*9, 660, 220+32*9+80, 660+32))
                             {
-                                UListDelete(*unum);        //删除用户
-                                mouse_off(&mouse);
-                                bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
-                                puthz(220, 660, "删除用户成功！即将返回上级……", 32, 33, 57355);
-                                delay(2000);
-                                *page = 0;   //返回上级
-                                esc = 1;
-                                mouse_on(mouse);
-                                break;
+                                if(ReadUserNum() == 1)   //如果删除后没有用户了
+                                {
+                                    puthz(220, 660, "不能删除最后一个用户！", 32, 33, 57355);
+                                    delay(2000);
+                                    bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                    break;
+                                }
+                               else
+                               {
+                                    UListDelete(*unum);        //删除用户
+                                    mouse_off(&mouse);
+                                    bar1(220, 660-2, 220+700, 660+32+2, 65530);   //清除提示框
+                                    puthz(220, 660, "删除用户成功！即将返回上级……", 32, 33, 57355);
+                                    delay(2000);
+                                    *page = 0;   //返回上级
+                                    esc = 1;
+                                    mouse_on(mouse);
+                                    break;
+                               }
                             }
                             continue;
                         }
@@ -544,7 +556,7 @@ void userinfo_display_ctrl(int * unum,int * sidepage, int *page)
                 }
                 continue;
             }            
-            if(mouse_in(53, 720, 53+16*4, 720+16))
+            if(mouse_in(53, 720, 53+16*4, 720+16))      //返回上级
             {
                 mouse_trans(HAND);
                 if(mouse_press(53, 720, 53+16*4, 720+16))
@@ -599,6 +611,7 @@ int carhead_list(int x1, int y1, int x2, int y2)
                         put_carhead(x2+4, y2+4, j+i*8+1, 24, 0);
                         RestoreMenuBuffer(x1-1, y1-1, x1+410+1, y1+210+1, buffer_id);   //恢复菜单
                         mouse_on(mouse);
+                        ClearMenuBuffer();   //清除菜单缓存
                         return j+i*8+1;   //返回车牌头
                     }
                     break;
@@ -616,6 +629,7 @@ int carhead_list(int x1, int y1, int x2, int y2)
             mouse_off(&mouse);
             RestoreMenuBuffer(x1-1, y1-1, x1+410+1, y1+210+1, buffer_id);   //恢复菜单
             mouse_on(mouse);
+            ClearMenuBuffer();   //清除菜单缓存
             return 0;
         }
         mouse_trans(CURSOR);

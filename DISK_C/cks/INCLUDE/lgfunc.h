@@ -23,8 +23,9 @@ typedef struct USER
 	int ifin;				//是否为校内人员
 
 	int record_times;	//违停次数
-
 	int record_id;	//曾处理过的记录编号
+
+	int appeal_times;	//申诉次数
 } USER;				//用户结构体
 
 //暂时注释掉

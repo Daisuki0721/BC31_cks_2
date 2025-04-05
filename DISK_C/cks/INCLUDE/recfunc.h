@@ -85,4 +85,10 @@ void RecStateCount(USER user, RecState * recstate);
 /*记录线性表处理为申诉线性表*/
 int RecListToAppealList(USER user, RecList * RL);
 
+/*用户申诉记录修正函数*/
+void RecListAppealFix(USER user);
+
+/*整理用户违停记录次数*/
+void RecListRecordFix(USER user);
+
 #endif

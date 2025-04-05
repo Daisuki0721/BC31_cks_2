@@ -5,6 +5,8 @@ void admin_interface(int * func)
 {
     int page=0;
 
+    admin_appeal_rec_fix();      //修正所有用户申诉记录
+
     mouse_off(&mouse);
     mouse_trans(CURSOR);
     delay(100);
@@ -12,6 +14,7 @@ void admin_interface(int * func)
     g_admin_interface();
 
     mouse_on(mouse);
+
     while(1)
     {
         switch(page)
@@ -184,16 +187,31 @@ void g_admin_interface(void)
     Readbmp64k(0, 0, "bmp\\hust1.bmp");
 }
 
+/*所有用户申诉记录修正*/
+void admin_appeal_rec_fix(void)
+{
+    int i;
+    UserList UL = {NULL, 0, 0};          //用户线性表
+
+    ReadAllUser(&UL);         //获取所有用户
+    for(i = 0; i < UL.length; i++)
+    {
+        RecListRecordFix(UL.elem[i]);   //修正用户违停记录
+        RecListAppealFix(UL.elem[i]);   //修正用户申诉记录
+    }
+}
+
 /*绘制管理主控面板*/
 void g_admin_main_panel(void)
 {
     int i;
-    char * proj[5] = {"摄像头", "记录管理", "用户管理", "规则修改", "退出"};
+    char * proj[5] = {"摄像头", "记录与申诉", "用户管理", "规则修改", "退出"};
     clear_window(ALLBOARD);
     for(i=0;i<5;i++)
     {
         rounded_button_d(15, 150+i*75, 145, 60, proj[i], 5, 65498);
     }
+    appeal_all_confirm(155, 230);   //绘制申诉红点
     puthz(602-101, 324, "尊敬的管理员", 32, 34, 0);
     puthz(602-254, 364, "欢迎使用校园机动车违停管理系统", 32, 34, 0);
     puthz(602-228, 404, "请在左侧选择需要办理的业务", 32, 34, 0);
@@ -210,3 +228,48 @@ void g_admin_exit_video(void)
     getch(); 
 }
 
+/*绘制所有用户统计申诉红点*/
+void appeal_all_confirm(int x, int y)
+{
+    int i;
+    int flag = 0, count = 0;
+    char temp[3] = {0};
+    UserList UL = {NULL, 0, 0};          //用户线性表
+    ReadAllUser(&UL);         //获取所有用户
+
+    for(i = 0; i < UL.length; i++)
+    {
+        count += UL.elem[i].appeal_times;   //获取所有用户的申诉次数
+    }
+    
+    if(count > 0)
+    {
+        flag = 1;
+    }
+    else
+    {
+        DestroyUList(&UL);         
+        return;                     //如果没有申诉记录，则直接返回
+    }
+
+
+    if(flag && count < 10)
+    {
+        Circlefill(x, y, 10, 63488);
+        sprintf(temp, "%d", count);
+        prt_asc16(x-3, y-8, temp, 65535);
+    }
+    else if(flag && count >= 10 && count < 100)
+    {
+        Circlefill(x, y, 10, 63488);
+        sprintf(temp, "%d", count);
+        prt_asc16(x-8, y-8, temp, 65535);
+    }
+    else if(flag && count >= 100)
+    {
+        Circlefill(x, y, 12, 63488);
+        prt_asc16(x-11, y-8, "99+", 65535);
+    }
+
+    DestroyUList(&UL);         //销毁用户线性表
+}

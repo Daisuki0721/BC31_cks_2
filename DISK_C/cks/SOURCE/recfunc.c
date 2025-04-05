@@ -367,3 +367,48 @@ int RecListToAppealList(USER user, RecList * RL)
 	DestroyRList(&RL_temp);			//销毁线性表
 	return 1;		//返回有记录
 }
+
+/****************************
+ * 功能说明：用户申诉记录修正函数
+ * 参数说明：用户结构体，记录线性表地址
+ * 返回值：无
+ * ****************************/
+void RecListAppealFix(USER user)
+{
+	RecState recstate = {0};
+
+	RecStateCount(user, &recstate);	//获取记录状态统计
+	user.appeal_times = recstate.appealed;	//申诉次数
+	UpdataUser(user);		//更新用户信息
+}
+
+/****************************
+ * 功能说明：整理用户违停记录次数
+ * 参数说明：用户结构体
+ * 返回值：无
+ * ****************************/
+void RecListRecordFix(USER user)
+{
+	int i;
+	int record_time = 1;
+	RecList RL = {0};
+	Record temp;
+	ReadAllRec(user, &RL);
+
+	for(i=0; i<RL.length; i++)
+	{
+		temp = RL.elem[i];
+		if(!(temp.appeal_state == 3 || temp.appeal_state == 5))
+		{		
+			temp.record_time = record_time;
+			record_time++;
+		}
+		else
+		{
+			temp.record_time = record_time;
+		}
+		UpdataRec(user, temp, i);
+	}
+
+	DestroyRList(&RL);
+}

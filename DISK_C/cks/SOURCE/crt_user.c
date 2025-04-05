@@ -48,8 +48,12 @@ void user_register_rand(char * name, USER * temp)
     strcpy(temp->code, "123456");
     temp->carhead = rand() % 32 + 1;
     user_carbody_rand(temp->carbody);
+
     temp->ifin = rand() % 2;
     temp->record_times = 0;
+    temp->record_id = 0;
+    temp->appeal_times = 0;
+
     user_tel_rand(temp->tel);
     user_email_rand(temp->mail);
     sprintf(path, "record\\%s.r", temp->name);
